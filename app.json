@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Minesweeper",
-    "slug": "Minesweeper",
+    "slug": "minesweeper",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -25,6 +25,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "060ec8ed-a4be-4f98-b395-23e7cb62abb9"
+      }
+    },
+    "owner": "kalightortaio"
   }
 }
