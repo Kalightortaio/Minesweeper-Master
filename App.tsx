@@ -1,17 +1,21 @@
 import { useEffect } from 'react';
 import { StyleSheet, View, StatusBar, Dimensions } from 'react-native';
-import Grid from './src/components/Grid';
 import Interface from './src/components/Interface';
+import Cell from './src/components/Cell';
 
 export default function App() {
-  const windowWidth = Dimensions.get('window').width;
-  const gridMargin = roundToClosestEven((0.05 * windowWidth));
   useEffect(() => {
     StatusBar.setHidden(true);
     return () => {
       StatusBar.setHidden(false);
     }
   }, [])
+
+  const numColumns = 16;
+  const numRows = 30;
+  const gridPadding = Dimensions.get('window').width * 0.05
+  const cellSize = ((Dimensions.get('window').width - (2 * (gridPadding))) / numColumns)
+
   const styles = StyleSheet.create({
     container: {
       flex: 1,
@@ -23,25 +27,51 @@ export default function App() {
       width: '100%',
       borderWidth: 2,
       borderColor: 'red',
-      backgroundColor: 'blue',
+      backgroundColor: '#B9B9B9',
     },
     gridContainer: {
       flex: 11,
+      width: '100%',
       alignItems: 'center',
       borderWidth: 2,
       borderColor: 'red',
-      backgroundColor: 'blue',
-      zIndex: 2,
+      backgroundColor: '#B6B6B6',
+      justifyContent: 'center',
     },
     grid: {
+      flex: 0,
+      justifyContent: 'center',
       alignItems: 'center',
-      margin: gridMargin,
       borderWidth: 2,
-      borderColor: 'red',
-      backgroundColor: 'white',
-      zIndex: 1,
+      borderColor: 'blue',
+    },
+    gridRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'center',
     }
   });
+
+  const rows = [];
+  for (let row = 0; row < numRows; row++) {
+    const cells = [];
+    for (let col = 0; col < numColumns; col++) {
+      cells.push(
+        <Cell
+          key={`${row}-${col}`}
+          rowIndex={row}
+          columnIndex={col}
+          size={cellSize}
+        />
+      );
+    }
+    rows.push(
+      <View key={`row-${row}`} style={styles.gridRow}>
+        {cells}
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.interface}>
@@ -49,13 +79,9 @@ export default function App() {
       </View>
       <View style={styles.gridContainer}>
         <View style={styles.grid}>
-          <Grid />
+          {rows}
         </View>
       </View>
     </View>
   );
-}
-
-function roundToClosestEven(n: number) {
-  return Math.round(n / 2) * 2;
 }

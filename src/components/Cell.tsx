@@ -4,9 +4,10 @@ import { TouchableOpacity, Text, StyleSheet, Vibration } from "react-native";
 interface CellProps {
     rowIndex: number;
     columnIndex: number;
+    size: number;
 }
 
-function Cell({ rowIndex, columnIndex }: CellProps) {
+function Cell({ rowIndex, columnIndex, size }: CellProps) {
     const [isRevealed, setIsRevealed] = useState(false);
     const [isFlagged, setIsFlagged] = useState(false);
 
@@ -27,11 +28,13 @@ function Cell({ rowIndex, columnIndex }: CellProps) {
 
     const styles = StyleSheet.create({
         cell: {
-            flex: 1,
+            height: size,
+            width: size,
             alignItems: 'center',
             justifyContent: 'center',
-            borderWidth: 2,
+            borderWidth: 1,
             borderColor: 'black',
+            backgroundColor: '#B6B6B6',
         },
     });
 
