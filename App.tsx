@@ -15,7 +15,7 @@ export default function App() {
       <View style={styles.interface}>
         <Interface />
       </View>
-      <View style={styles.grid}>
+      <View style={styles.gridContainer}>
         <Grid />
       </View>
     </View>
@@ -31,11 +31,10 @@ const styles = StyleSheet.create({
   interface: {
     flex: 1,
   },
-  grid: {
+  gridContainer: {
     flex: 9,
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'hidden',
     margin: 20,
   }
 });

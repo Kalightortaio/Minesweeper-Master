@@ -4,10 +4,9 @@ import { TouchableOpacity, Text, StyleSheet, Vibration } from "react-native";
 interface CellProps {
     rowIndex: number;
     columnIndex: number;
-    size: number;
 }
 
-function Cell({ rowIndex, columnIndex, size }: CellProps) {
+function Cell({ rowIndex, columnIndex }: CellProps) {
     const [isRevealed, setIsRevealed] = useState(false);
     const [isFlagged, setIsFlagged] = useState(false);
 
@@ -28,8 +27,7 @@ function Cell({ rowIndex, columnIndex, size }: CellProps) {
 
     const styles = StyleSheet.create({
         cell: {
-            width: size,
-            height: size,
+            flex: 1,
             alignItems: 'center',
             justifyContent: 'center',
             borderWidth: 1,
