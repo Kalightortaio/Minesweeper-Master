@@ -30,8 +30,8 @@ function Cell({ rowIndex, columnIndex }: CellProps) {
             flex: 1,
             alignItems: 'center',
             justifyContent: 'center',
-            borderWidth: 1,
-            borderColor: '#000',
+            borderWidth: 2,
+            borderColor: 'black',
         },
     });
 

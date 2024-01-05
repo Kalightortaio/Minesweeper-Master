@@ -1,4 +1,4 @@
-import { Dimensions, View } from 'react-native';
+import { Dimensions, View, StyleSheet } from 'react-native';
 import Cell from './Cell';
 
 const numColumns = 16;
@@ -13,7 +13,7 @@ function Grid() {
             columns.push(<Cell key={`${row}-${col}`} rowIndex={row} columnIndex={col} />);
         }
         grid.push(
-            <View key={`row-${row}`} style={{flexDirection: 'row', flex: 1}}>
+            <View key={`row-${row}`} style={styles.row}>
                 {columns}
             </View>
         )
@@ -22,3 +22,10 @@ function Grid() {
 }
 
 export default Grid;
+
+const styles = StyleSheet.create({
+    row: {
+        flex: 1,
+        flexDirection: 'row',
+    }
+})
