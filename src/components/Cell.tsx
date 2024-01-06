@@ -4,12 +4,24 @@ import { TouchableOpacity, Text, StyleSheet, Vibration } from "react-native";
 interface CellProps {
     rowIndex: number;
     columnIndex: number;
-    size: number;
+    cellSize: number;
+    borderWidth: number,
 }
 
-function Cell({ rowIndex, columnIndex, size }: CellProps) {
+function Cell({ rowIndex, columnIndex, cellSize, borderWidth }: CellProps) {
     const [isRevealed, setIsRevealed] = useState(false);
     const [isFlagged, setIsFlagged] = useState(false);
+
+    const computeStyle = (isRevealed: boolean, isFlagged: boolean) => {
+        let style = styles.cell;
+        if (isRevealed) {
+            style = { ...style, ...styles.revealed };
+        }
+        if (isFlagged) {
+            style = { ...style, ...styles.flagged };
+        }
+        return style;
+    };
 
     function handlePress() {
         if (!isRevealed && !isFlagged) {
@@ -28,19 +40,33 @@ function Cell({ rowIndex, columnIndex, size }: CellProps) {
 
     const styles = StyleSheet.create({
         cell: {
-            height: size,
-            width: size,
+            height: cellSize,
+            width: cellSize,
             alignItems: 'center',
             justifyContent: 'center',
-            borderWidth: 1,
-            borderColor: 'black',
-            backgroundColor: '#B6B6B6',
+            borderWidth: borderWidth,
+            borderTopColor: '#fff',
+            borderLeftColor: '#fff',
+            borderBottomColor: '#7D7D7D',
+            borderRightColor: '#7D7D7D',
+            backgroundColor: '#BDBDBD',
+            activeOpacity: 1,
         },
+        revealed: {
+            borderWidth: 1,
+            borderTopColor: '#7D7D7D',
+            borderLeftColor: '#7D7D7D',
+            borderBottomColor: 'transparent',
+            borderRightColor: 'transparent',
+        },
+        flagged: {
+            backgroundColor: 'red',
+        }
     });
 
     return (
         <TouchableOpacity
-            style={styles.cell}
+            style={computeStyle(isRevealed, isFlagged)}
             onPress={handlePress}
             onLongPress={handleLongPress}
         >

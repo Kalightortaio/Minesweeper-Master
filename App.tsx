@@ -13,37 +13,40 @@ export default function App() {
 
   const numColumns = 16;
   const numRows = 30;
-  const gridPadding = Dimensions.get('window').width * 0.05
-  const cellSize = ((Dimensions.get('window').width - (2 * (gridPadding))) / numColumns)
+  const borderWidth = 3;
+  const gridPadding = (Dimensions.get('window').width * 0.05);
+  const cellSize = ((Dimensions.get('window').width - (2 * (gridPadding))) / numColumns);
 
   const styles = StyleSheet.create({
     container: {
       flex: 1,
       alignItems: 'center',
-      justifyContent: 'flex-start',
+      borderWidth: borderWidth,
+      borderTopColor: '#fff',
+      borderLeftColor: '#fff',
+      borderBottomColor: '#7D7D7D',
+      borderRightColor: '#7D7D7D',
+      backgroundColor: '#BDBDBD',
+      justifyContent: 'space-evenly',
     },
     interface: {
-      flex: 1,
-      width: '100%',
-      borderWidth: 2,
-      borderColor: 'red',
-      backgroundColor: '#B9B9B9',
-    },
-    gridContainer: {
-      flex: 11,
-      width: '100%',
-      alignItems: 'center',
-      borderWidth: 2,
-      borderColor: 'red',
-      backgroundColor: '#B6B6B6',
-      justifyContent: 'center',
+      height: (2 * cellSize),
+      width: ((2 * borderWidth) + (numColumns * cellSize)),
+      borderWidth: borderWidth,
+      borderTopColor: '#7D7D7D',
+      borderLeftColor: '#7D7D7D',
+      borderBottomColor: '#fff',
+      borderRightColor: '#fff',
+      backgroundColor: '#BDBDBD',
     },
     grid: {
-      flex: 0,
       justifyContent: 'center',
       alignItems: 'center',
-      borderWidth: 2,
-      borderColor: 'blue',
+      borderWidth: borderWidth,
+      borderTopColor: '#7D7D7D',
+      borderLeftColor: '#7D7D7D',
+      borderBottomColor: '#fff',
+      borderRightColor: '#fff',
     },
     gridRow: {
       flexDirection: 'row',
@@ -61,7 +64,8 @@ export default function App() {
           key={`${row}-${col}`}
           rowIndex={row}
           columnIndex={col}
-          size={cellSize}
+          cellSize={cellSize}
+          borderWidth={borderWidth}
         />
       );
     }
@@ -77,10 +81,8 @@ export default function App() {
       <View style={styles.interface}>
         <Interface />
       </View>
-      <View style={styles.gridContainer}>
-        <View style={styles.grid}>
-          {rows}
-        </View>
+      <View style={styles.grid}>
+        {rows}
       </View>
     </View>
   );
