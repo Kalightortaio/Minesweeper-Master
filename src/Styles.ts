@@ -37,6 +37,20 @@ export const styles: StylesType = StyleSheet.create({
         borderBottomColor: '#fff',
         borderRightColor: '#fff',
     },
+    gridLineX: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        height: 1,
+        backgroundColor: '#7D7D7D',
+    },
+    gridLineY: {
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        width: 1,
+        backgroundColor: '#7D7D7D',
+    },
     gridRow: {
         flexDirection: 'row',
         flexWrap: 'wrap',
@@ -60,7 +74,7 @@ export const styles: StylesType = StyleSheet.create({
     },
     isFlagged: {
         backgroundColor: 'red',
-    }
+    },
 });
 
 export const computeStyle = (baseStyle: StyleKeys, states: { [key: string]: boolean }) => {

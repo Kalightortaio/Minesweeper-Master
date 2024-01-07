@@ -1,3 +1,4 @@
+import * as Font from 'expo-font';
 import { useEffect } from 'react';
 import { View, StatusBar } from 'react-native';
 import Interface from './src/components/Interface';
@@ -8,39 +9,28 @@ import { styles } from './src/Styles';
 export default function App() {
   useEffect(() => {
     StatusBar.setHidden(true);
+    Font.loadAsync({
+      'DSEG': require('./assets/fonts/DSEG7Classic.ttf'),
+    });
     return () => {
       StatusBar.setHidden(false);
     }
   }, [])
 
   const gridLines = [];
-  for (let i = 0; i <= numRows; i++) {
+  for (let i = 1; i < numRows; i++) {
     gridLines.push(
       <View
         key={`horizontal-line-${i}`}
-        style={{
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          top: i * cellSize,
-          height: 1,
-          backgroundColor: 'grey',
-        }}
+        style={[styles.gridLineX, { top: i * cellSize }]}
       />
     );
   }
-  for (let j = 0; j <= numColumns; j++) {
+  for (let j = 1; j < numColumns; j++) {
     gridLines.push(
       <View
         key={`vertical-line-${j}`}
-        style={{
-          position: 'absolute',
-          top: 0,
-          bottom: 0,
-          left: j * cellSize,
-          width: 1,
-          backgroundColor: 'grey',
-        }}
+        style={[styles.gridLineY, { left: j * cellSize }]}
       />
     );
   }

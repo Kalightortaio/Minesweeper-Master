@@ -1,1 +1,1 @@
-export type StyleKeys = 'container' | 'interface' | 'grid' | 'gridRow' | 'cell' | 'isRevealed' | 'isFlagged';
+export type StyleKeys = 'container' | 'interface' | 'grid' | 'gridLineX' | 'gridLineY' | 'gridRow' | 'cell' | 'isRevealed' | 'isFlagged';
