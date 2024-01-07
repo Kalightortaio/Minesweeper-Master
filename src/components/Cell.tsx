@@ -3,17 +3,19 @@ import { TouchableWithoutFeedback, Text, Vibration, View } from "react-native";
 import { computeStyle } from "../Styles";
 
 interface CellProps {
-    rowIndex: number;
-    columnIndex: number;
+    rowIndex: number,
+    columnIndex: number,
+    onFirstPress: () => void,
 }
 
-function Cell({ rowIndex, columnIndex }: CellProps) {
+function Cell({ rowIndex, columnIndex, onFirstPress }: CellProps) {
     const [isRevealed, setIsRevealed] = useState(false);
     const [isFlagged, setIsFlagged] = useState(false);
 
     function handlePress() {
         if (!isRevealed && !isFlagged) {
             setIsRevealed(true);
+            onFirstPress();
         }
         console.log('Cell pressed', rowIndex, columnIndex)
     }
@@ -22,6 +24,7 @@ function Cell({ rowIndex, columnIndex }: CellProps) {
         if (!isRevealed) {
             setIsFlagged(!isFlagged);
             Vibration.vibrate(50);
+            onFirstPress();
         }
         console.log('Cell long pressed', rowIndex, columnIndex)
     }
