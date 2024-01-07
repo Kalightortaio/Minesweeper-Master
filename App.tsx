@@ -1,7 +1,9 @@
 import { useEffect } from 'react';
-import { StyleSheet, View, StatusBar, Dimensions } from 'react-native';
+import { View, StatusBar } from 'react-native';
 import Interface from './src/components/Interface';
 import Cell from './src/components/Cell';
+import { cellSize, numColumns, numRows } from './src/Constants';
+import { styles } from './src/Styles';
 
 export default function App() {
   useEffect(() => {
@@ -11,49 +13,37 @@ export default function App() {
     }
   }, [])
 
-  const numColumns = 16;
-  const numRows = 30;
-  const borderWidth = 3;
-  const gridPadding = (Dimensions.get('window').width * 0.05);
-  const cellSize = ((Dimensions.get('window').width - (2 * (gridPadding))) / numColumns);
-
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      alignItems: 'center',
-      borderWidth: borderWidth,
-      borderTopColor: '#fff',
-      borderLeftColor: '#fff',
-      borderBottomColor: '#7D7D7D',
-      borderRightColor: '#7D7D7D',
-      backgroundColor: '#BDBDBD',
-      justifyContent: 'space-evenly',
-    },
-    interface: {
-      height: (2 * cellSize),
-      width: ((2 * borderWidth) + (numColumns * cellSize)),
-      borderWidth: borderWidth,
-      borderTopColor: '#7D7D7D',
-      borderLeftColor: '#7D7D7D',
-      borderBottomColor: '#fff',
-      borderRightColor: '#fff',
-      backgroundColor: '#BDBDBD',
-    },
-    grid: {
-      justifyContent: 'center',
-      alignItems: 'center',
-      borderWidth: borderWidth,
-      borderTopColor: '#7D7D7D',
-      borderLeftColor: '#7D7D7D',
-      borderBottomColor: '#fff',
-      borderRightColor: '#fff',
-    },
-    gridRow: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      justifyContent: 'center',
-    }
-  });
+  const gridLines = [];
+  for (let i = 0; i <= numRows; i++) {
+    gridLines.push(
+      <View
+        key={`horizontal-line-${i}`}
+        style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          top: i * cellSize,
+          height: 1,
+          backgroundColor: 'grey',
+        }}
+      />
+    );
+  }
+  for (let j = 0; j <= numColumns; j++) {
+    gridLines.push(
+      <View
+        key={`vertical-line-${j}`}
+        style={{
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          left: j * cellSize,
+          width: 1,
+          backgroundColor: 'grey',
+        }}
+      />
+    );
+  }
 
   const rows = [];
   for (let row = 0; row < numRows; row++) {
@@ -64,8 +54,6 @@ export default function App() {
           key={`${row}-${col}`}
           rowIndex={row}
           columnIndex={col}
-          cellSize={cellSize}
-          borderWidth={borderWidth}
         />
       );
     }
@@ -82,6 +70,7 @@ export default function App() {
         <Interface />
       </View>
       <View style={styles.grid}>
+        {gridLines}
         {rows}
       </View>
     </View>
