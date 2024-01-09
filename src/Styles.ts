@@ -1,5 +1,5 @@
 import { StyleSheet, ViewStyle, TextStyle, ImageStyle } from 'react-native';
-import { cellSize, borderWidth, numColumns } from './Constants';
+import { cellSize, borderWidth, numColumns, numRows } from './Constants';
 import { StyleKeys } from './Types';
 
 type StylesType = {
@@ -36,6 +36,8 @@ export const styles: StylesType = StyleSheet.create({
         borderLeftColor: '#7D7D7D',
         borderBottomColor: '#fff',
         borderRightColor: '#fff',
+        minHeight: (numRows * cellSize),
+        minWidth: ((2 * borderWidth) + (numColumns * cellSize)),
     },
     gridLineX: {
         position: 'absolute',
