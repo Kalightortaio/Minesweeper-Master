@@ -1,52 +1,48 @@
-import React, { useState } from "react";
+import React from "react";
 import { Text, Vibration, View } from "react-native";
 import { computeStyle } from "../Styles";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { CellStateProps } from "../Types";
 
-
-interface CellProps {
-    rowIndex: number,
-    columnIndex: number,
-    onFirstPress: () => void,
+interface CellComponentProps extends CellStateProps {
     isPanOrPinchActive: boolean,
+    revealCell: () => void,
+    flagCell: () => void,
 }
 
-function Cell({ rowIndex, columnIndex, onFirstPress, isPanOrPinchActive }: CellProps) {
-    const [isRevealed, setIsRevealed] = useState(false);
-    const [isFlagged, setIsFlagged] = useState(false);
+function Cell({ isPanOrPinchActive, revealCell, flagCell, ...cellStateProps }: CellComponentProps) {
 
     const tapGesture = Gesture.Tap()
         .runOnJS(true)
         .onStart(() => {
             if (!isPanOrPinchActive) {
-                if (!isRevealed && !isFlagged) {
-                    setIsRevealed(true);
-                    onFirstPress();
-                    console.log('Cell pressed', rowIndex, columnIndex);
+                if (!cellStateProps.isRevealed && !cellStateProps.isFlagged) {
+                    revealCell();
                 }
             }
         });
 
     const longPressGesture = Gesture.LongPress()
         .runOnJS(true)
-        .minDuration(200)
+        .minDuration(300)
         .onStart(() => {
             if (!isPanOrPinchActive) {
-                if (!isRevealed) {
-                    setIsFlagged(!isFlagged);
-                    onFirstPress();
+                if (!cellStateProps.isRevealed) {
+                    flagCell();
                     Vibration.vibrate(80);
-                    console.log('Cell long pressed', rowIndex, columnIndex);
                 }
             }
         });
 
     return (
         <GestureDetector gesture={Gesture.Exclusive(tapGesture, longPressGesture)}>
-            <View style={computeStyle('cell', { isRevealed, isFlagged })}>
-                <Text>
-                    {/* Cell content */}
-                </Text>
+            <View style={computeStyle('cell', { isRevealed: cellStateProps.isRevealed, isFlagged: cellStateProps.isFlagged, isMine: cellStateProps.isMine })}>
+                {cellStateProps.isMine || (cellStateProps.neighbors == 0) || !cellStateProps.isRevealed || <Text>
+                    {cellStateProps.neighbors}
+                </Text>}
+                {cellStateProps.isMine && cellStateProps.isRevealed && <Text>
+                    X
+                </Text>}
             </View>
         </GestureDetector>
     );
