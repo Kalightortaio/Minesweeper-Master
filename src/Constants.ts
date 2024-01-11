@@ -2,6 +2,7 @@ import { Dimensions } from 'react-native';
 
 export const numColumns = 16;
 export const numRows = 30;
+export const numMines = Math.floor(numColumns * numRows * 0.20625);
 export const borderWidth = 3;
 export const screenWidth = Dimensions.get('window').width;
 export const gridPadding = (screenWidth * 0.05);
