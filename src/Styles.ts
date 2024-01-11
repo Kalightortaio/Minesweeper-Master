@@ -69,10 +69,6 @@ export const styles: StylesType = StyleSheet.create({
         borderBottomColor: '#7D7D7D',
         borderRightColor: '#7D7D7D',
         backgroundColor: '#BDBDBD',
-    
-    },
-    isMine: {
-        backgroundColor: 'transparent',
     },
     isRevealed: {
         borderWidth: 0,

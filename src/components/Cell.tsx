@@ -36,7 +36,7 @@ function Cell({ isPanOrPinchActive, revealCell, flagCell, ...cellStateProps }: C
 
     return (
         <GestureDetector gesture={Gesture.Exclusive(tapGesture, longPressGesture)}>
-            <View style={computeStyle('cell', { isRevealed: cellStateProps.isRevealed, isFlagged: cellStateProps.isFlagged, isMine: cellStateProps.isMine })}>
+            <View style={computeStyle('cell', { isRevealed: cellStateProps.isRevealed, isFlagged: cellStateProps.isFlagged })}>
                 {cellStateProps.isMine || (cellStateProps.neighbors == 0) || !cellStateProps.isRevealed || <Text>
                     {cellStateProps.neighbors}
                 </Text>}
