@@ -74,9 +74,6 @@ export const styles: StylesType = StyleSheet.create({
         borderWidth: 0,
         backgroundColor: 'transparent',
     },
-    isFlagged: {
-        backgroundColor: 'blue',
-    },
 });
 
 export const computeStyle = (baseStyle: StyleKeys, states: { [key: string]: boolean }) => {
