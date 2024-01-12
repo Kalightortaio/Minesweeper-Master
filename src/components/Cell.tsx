@@ -6,42 +6,68 @@ import { CellStateProps } from "../Types";
 
 interface CellComponentProps extends CellStateProps {
     isPanOrPinchActive: boolean,
+    isFlagMode: boolean,
     revealCell: () => void,
     flagCell: () => void,
 }
 
-function Cell({ isPanOrPinchActive, revealCell, flagCell, ...cellStateProps }: CellComponentProps) {
+function Cell({ isPanOrPinchActive, isFlagMode, revealCell, flagCell, ...cellStateProps }: CellComponentProps) {
 
-    const tapGesture = Gesture.Tap()
+    const tapGesture = React.useMemo(
+        () =>
+        Gesture.Tap()
         .runOnJS(true)
         .onStart(() => {
             if (!isPanOrPinchActive) {
-                if (!cellStateProps.isRevealed && !cellStateProps.isFlagged) {
-                    revealCell();
+                if (isFlagMode) {
+                    if (!cellStateProps.isRevealed) {
+                        flagCell();
+                        Vibration.vibrate(100);
+                    }
+                } else {
+                    if (!cellStateProps.isRevealed && !cellStateProps.isFlagged) {
+                        revealCell();
+                    }
                 }
             }
-        });
+        }),
+        [isPanOrPinchActive, cellStateProps, isFlagMode, flagCell, revealCell]  
+    );
 
-    const longPressGesture = Gesture.LongPress()
-        .runOnJS(true)
-        .minDuration(250)
-        .onStart(() => {
-            if (!isPanOrPinchActive) {
-                if (!cellStateProps.isRevealed) {
-                    flagCell();
-                    Vibration.vibrate(80);
-                }
-            }
-        });
+    const doubleTapGesture = React.useMemo(
+        () =>
+            Gesture.Tap()
+                .runOnJS(true)
+                .maxDelay(200)
+                .numberOfTaps(2)
+                .onStart(() => {
+                    if (!isPanOrPinchActive) {
+                        if (isFlagMode) {
+                            if (!cellStateProps.isRevealed && !cellStateProps.isFlagged) {
+                                revealCell();
+                            }
+                        } else {
+                            if (!cellStateProps.isRevealed) {
+                                flagCell();
+                                Vibration.vibrate(100);
+                            }
+                        }
+                    }
+                }),
+        [isPanOrPinchActive, cellStateProps, isFlagMode, flagCell, revealCell] 
+    );
 
     return (
-        <GestureDetector gesture={Gesture.Exclusive(tapGesture, longPressGesture)}>
-            <View style={computeStyle('cell', { isRevealed: cellStateProps.isRevealed, isFlagged: cellStateProps.isFlagged })}>
+        <GestureDetector gesture={Gesture.Exclusive(doubleTapGesture, tapGesture)}>
+            <View style={computeStyle('cell', { isRevealed: cellStateProps.isRevealed })}>
                 {cellStateProps.isMine || (cellStateProps.neighbors == 0) || !cellStateProps.isRevealed || <Text>
                     {cellStateProps.neighbors}
                 </Text>}
                 {cellStateProps.isMine && cellStateProps.isRevealed && <Text>
-                    X
+                    💣
+                </Text>}
+                {cellStateProps.isFlagged && <Text>
+                    🚩
                 </Text>}
             </View>
         </GestureDetector>
