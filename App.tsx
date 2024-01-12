@@ -1,6 +1,6 @@
 import * as Font from 'expo-font';
 import { useEffect, useState } from 'react';
-import { View, StatusBar } from 'react-native';
+import { View, StatusBar, Modal, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import Zoomable from './src/components/Zoomable';
 import Interface from './src/components/Interface';
 import Cell from './src/components/Cell';
@@ -18,6 +18,22 @@ export default function App() {
   const [timerIntervalId, setTimerIntervalId] = useState<NodeJS.Timeout | null>(null);
   const [isPanOrPinchActive, setPanOrPinchActive] = useState(false);
   const [flagCount, setFlagCount] = useState(0);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [isFlagMode, setIsFlagMode] = useState(false);
+
+  function onResetGame() {
+    setIsNewGame(true);
+    setIsFirstPress(true);
+    setTimer(0);
+    setFlagCount(0);
+
+    if (timerIntervalId) {
+      clearInterval(timerIntervalId);
+      setTimerIntervalId(null);
+    }
+
+    setCells(initializeCells());
+  }
 
   useEffect(() => {
     StatusBar.setHidden(true);
@@ -97,20 +113,44 @@ export default function App() {
     setCells(currentCells => {
       let newCells = currentCells.map(row => row.slice());
 
-      if (isFirstPress && newCells[row][col].isMine) {
-        const { newRow, newCol } = findNewMineLocation(newCells);
-        newCells[row][col].isMine = false;
-        newCells[newRow][newCol].isMine = true; 
+      if (isFirstPress) {
+        for (let r = row - 1; r <= row + 1; r++) {
+          for (let c = col - 1; c <= col + 1; c++) {
+            if (r >= 0 && r < numRows && c >= 0 && c < numColumns && newCells[r][c].isMine) {
+              const { newRow, newCol } = findNewMineLocation(newCells);
+              newCells[r][c].isMine = false;
+              newCells[newRow][newCol].isMine = true;
+            }
+          }
+        }
+
+        for (let r = row - 2; r <= row + 2; r++) {
+          for (let c = col - 2; c <= col + 2; c++) {
+            if ((r < row - 1 || r > row + 1 || c < col - 1 || c > col + 1) &&
+              r >= 0 && r < numRows && c >= 0 && c < numColumns &&
+              newCells[r][c].isMine && Math.random() < 0.3) {
+              const { newRow, newCol } = findNewMineLocation(newCells);
+              newCells[r][c].isMine = false;
+              newCells[newRow][newCol].isMine = true;
+            }
+          }
+        }
 
         for (let r = 0; r < numRows; r++) {
           for (let c = 0; c < numColumns; c++) {
             newCells = updateNeighbors(r, c, newCells);
           }
         }
+
+        setIsFirstPress(false);
       }
 
-      newCells = revealAdjacentCells(row, col, newCells);
-      setIsFirstPress(false);
+      if (!newCells[row][col].isMine) {
+        newCells = revealAdjacentCells(row, col, newCells);
+      } else {
+        newCells[row][col].isRevealed = true;
+      }
+
       return newCells;
     });
   };
@@ -122,10 +162,13 @@ export default function App() {
     cells[row][col].isRevealed = true;
 
     if (cells[row][col].neighbors === 0) {
-      cells = revealAdjacentCells(row - 1, col, cells);
-      cells = revealAdjacentCells(row + 1, col, cells);
-      cells = revealAdjacentCells(row, col - 1, cells);
-      cells = revealAdjacentCells(row, col + 1, cells);
+      for (let r = Math.max(0, row - 1); r <= Math.min(row + 1, numRows - 1); r++) {
+        for (let c = Math.max(0, col - 1); c <= Math.min(col + 1, numColumns - 1); c++) {
+          if (!cells[r][c].isRevealed && !cells[r][c].isFlagged) {
+            revealAdjacentCells(r, c, cells);
+          }
+        }
+      }
     }
 
     return cells;
@@ -214,11 +257,55 @@ export default function App() {
     return { newRow, newCol };
   }
 
+  const onSettingsModal = () => {
+    setModalVisible(true);
+  };
+
+  const onCloseModal = () => {
+    setModalVisible(false);
+  };
+
+  const onToggleFlagMode = () => {
+    setIsFlagMode(currentFlagMode => !currentFlagMode);
+  };
+
+  const modalstuff = StyleSheet.create({
+    container: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    modalContainer: {
+      flex: 1,
+    },
+    topBar: {
+      paddingTop: 20,
+      paddingBottom: 10,
+      paddingHorizontal: 10,
+      flexDirection: 'row',
+      justifyContent: 'flex-start',
+      alignItems: 'center',
+      backgroundColor: '#ddd',
+    },
+    backButton: {
+      padding: 10,
+    },
+    backArrow: {
+      fontSize: 24,
+      fontWeight: 'bold',
+    },
+    modalContent: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+  });
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={styles.container}>
         <View style={styles.interface}>
-          <Interface timer={timer} flagCount={flagCount} fontsLoaded={fontsLoaded}/>
+          <Interface timer={timer} flagCount={flagCount} fontsLoaded={fontsLoaded} isFlagMode={isFlagMode} onSettingsModal={onSettingsModal} onResetGame={onResetGame} onToggleFlagMode={onToggleFlagMode}/>
         </View>
         <View style={styles.grid}>
           <Zoomable 
@@ -234,6 +321,7 @@ export default function App() {
                     isPanOrPinchActive={isPanOrPinchActive}
                     revealCell={() => revealCell(rowIndex, colIndex)}
                     flagCell={() => flagCell(rowIndex, colIndex)}
+                    isFlagMode={isFlagMode}
                     {...cellState}
                   />
                 ))}
@@ -242,6 +330,26 @@ export default function App() {
           </Zoomable>
         </View>
       </View>
+      {modalVisible && <View style={modalstuff.container}>
+        <Modal
+          animationType="slide"
+          transparent={false}
+          visible={modalVisible}
+          onRequestClose={onCloseModal}
+        >
+          <View style={modalstuff.modalContainer}>
+            <View style={modalstuff.topBar}>
+              <TouchableOpacity onPress={onCloseModal} style={modalstuff.backButton}>
+                <Text style={modalstuff.backArrow}>←</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={modalstuff.modalContent}>
+              {/* Your modal content goes here */}
+              <Text>Settings Content</Text>
+            </View>
+          </View>
+        </Modal>
+      </View>}
     </GestureHandlerRootView >
   );
 }
