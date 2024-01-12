@@ -1,13 +1,16 @@
 import { View } from 'react-native';
 import NumericDisplay from './NumericDisplay';
-import { screenWidth } from '../Constants';
+import { numMines, screenWidth } from '../Constants';
 
 interface InterfaceProps {
     timer: number,
+    fontsLoaded: boolean,
+    flagCount: number,
 }
 
-function Interface({ timer }: InterfaceProps) {
-    let var1 = 99;
+function Interface({ timer, flagCount, fontsLoaded }: InterfaceProps) {
+    let flagsLeft = numMines - flagCount;
+    if (flagsLeft < 0) flagsLeft = 0;
 
     return <View style={{
         flexDirection: 'row',
@@ -15,8 +18,10 @@ function Interface({ timer }: InterfaceProps) {
         justifyContent: 'space-between',
         padding: (screenWidth * 0.01),
     }}>
-        <NumericDisplay value={var1}/>
-        <NumericDisplay value={timer}/>
+        {fontsLoaded &&
+        <NumericDisplay value={flagsLeft}/>}
+        {fontsLoaded &&
+        <NumericDisplay value={timer}/>}
     </View>;
 }
 

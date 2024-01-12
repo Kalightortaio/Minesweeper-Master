@@ -17,6 +17,7 @@ export default function App() {
   const [timer, setTimer] = useState(0);
   const [timerIntervalId, setTimerIntervalId] = useState<NodeJS.Timeout | null>(null);
   const [isPanOrPinchActive, setPanOrPinchActive] = useState(false);
+  const [flagCount, setFlagCount] = useState(0);
 
   useEffect(() => {
     StatusBar.setHidden(true);
@@ -130,14 +131,19 @@ export default function App() {
     return cells;
   }
 
-
   const flagCell = (row: number, col: number) => {
     setCells(currentCells => {
       const newCells = [...currentCells];
       newCells[row] = [...newCells[row]];
-      newCells[row][col] = { ...newCells[row][col], isFlagged: !newCells[row][col].isFlagged };
+      const isFlagged = !newCells[row][col].isFlagged;
+      newCells[row][col] = { ...newCells[row][col], isFlagged: isFlagged };
+      updateFlagCount(isFlagged);
       return newCells;
     });
+  };
+
+  const updateFlagCount = (isFlagged: boolean) => {
+    setFlagCount(prevFlagCount => isFlagged ? prevFlagCount + 1 : prevFlagCount - 1);
   };
 
   function placeMines(currentCells: CellStateProps[][]) {
@@ -212,7 +218,7 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={styles.container}>
         <View style={styles.interface}>
-          {fontsLoaded && <Interface timer={timer}/>}
+          <Interface timer={timer} flagCount={flagCount} fontsLoaded={fontsLoaded}/>
         </View>
         <View style={styles.grid}>
           <Zoomable 

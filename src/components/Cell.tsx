@@ -24,7 +24,7 @@ function Cell({ isPanOrPinchActive, revealCell, flagCell, ...cellStateProps }: C
 
     const longPressGesture = Gesture.LongPress()
         .runOnJS(true)
-        .minDuration(300)
+        .minDuration(250)
         .onStart(() => {
             if (!isPanOrPinchActive) {
                 if (!cellStateProps.isRevealed) {
