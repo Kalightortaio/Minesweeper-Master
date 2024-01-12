@@ -1,14 +1,21 @@
 import { View } from 'react-native';
 import NumericDisplay from './NumericDisplay';
-import { numMines, screenWidth } from '../Constants';
+import { borderWidth, buttonLength, numMines, screenWidth } from '../Constants';
+import ButtonReset from './ButtonReset';
+import ButtonSettings from './ButtonSettings';
+import ButtonFlag from './ButtonFlag';
 
 interface InterfaceProps {
     timer: number,
-    fontsLoaded: boolean,
     flagCount: number,
+    fontsLoaded: boolean,
+    isFlagMode: boolean,
+    onToggleFlagMode: () => void,
+    onSettingsModal: () => void,
+    onResetGame: () => void,
 }
 
-function Interface({ timer, flagCount, fontsLoaded }: InterfaceProps) {
+function Interface({ timer, flagCount, fontsLoaded, isFlagMode, onResetGame, onToggleFlagMode, onSettingsModal }: InterfaceProps) {
     let flagsLeft = numMines - flagCount;
     if (flagsLeft < 0) flagsLeft = 0;
 
@@ -18,10 +25,18 @@ function Interface({ timer, flagCount, fontsLoaded }: InterfaceProps) {
         justifyContent: 'space-between',
         padding: (screenWidth * 0.01),
     }}>
-        {fontsLoaded &&
-        <NumericDisplay value={flagsLeft}/>}
-        {fontsLoaded &&
-        <NumericDisplay value={timer}/>}
+        <NumericDisplay value={flagsLeft} shouldRender={fontsLoaded}/>
+        <View style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            width: ((buttonLength + borderWidth) * 3.25),
+        }}>
+            <ButtonSettings onSettingsModal={onSettingsModal}/>
+            <ButtonReset onResetGame={onResetGame}/>
+            <ButtonFlag onToggleFlagMode={onToggleFlagMode} isFlagMode={isFlagMode}/>
+        </View>
+        <NumericDisplay value={timer} shouldRender={fontsLoaded}/>
     </View>;
 }
 
