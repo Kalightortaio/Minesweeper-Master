@@ -1,11 +1,12 @@
-import { Text,View } from "react-native";
+import { Text, View } from "react-native";
 import { borderWidth, cellSize, screenWidth } from "../Constants";
 
 interface NumericDisplayProps {
     value: number,
+    shouldRender: boolean,
 }
 
-function NumericDisplay({ value }: NumericDisplayProps) {
+function NumericDisplay({ value, shouldRender }: NumericDisplayProps) {
     let display = formatNumber(value);
     return (
         <View style={{
@@ -21,15 +22,15 @@ function NumericDisplay({ value }: NumericDisplayProps) {
                 alignItems: 'flex-end',
 
             }}>
-                <Text style={{
+                {shouldRender && <Text style={{
                     fontFamily: 'DSEG',
                     color: '#FF0000',
                     fontSize: (screenWidth * 0.05),
                 }}
                 >
                     {display}
-                </Text>
-                <Text style={{
+                </Text>}
+                {shouldRender && <Text style={{
                     position: 'absolute',
                     fontFamily: 'DSEG',
                     color: '#FF0000',
@@ -41,7 +42,7 @@ function NumericDisplay({ value }: NumericDisplayProps) {
                 }}
                 >
                     888
-                </Text>
+                </Text>}
             </View>
         </View>
     );
