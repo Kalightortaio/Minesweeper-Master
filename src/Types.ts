@@ -8,3 +8,10 @@ export interface CellStateProps {
     isCorner: boolean;
     neighbors: number;
 }
+export type RootStackParamList = {
+    MainMenu: undefined;
+    ClassicMode: undefined;
+    HighScores: undefined;
+    ChallengeMode: undefined;
+    Settings: undefined;
+};
