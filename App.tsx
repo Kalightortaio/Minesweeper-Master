@@ -21,6 +21,7 @@ export default function App() {
     (async () => {
       await Font.loadAsync({
         'DSEG': require('./assets/fonts/DSEG.ttf'),
+        'MINESWEEPER': require('./assets/fonts/MINE-SWEEPER.ttf'),
       });
       setFontsLoaded(true);
     })();

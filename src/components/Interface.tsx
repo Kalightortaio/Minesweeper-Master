@@ -11,11 +11,10 @@ interface InterfaceProps {
     fontsLoaded: boolean,
     isFlagMode: boolean,
     onToggleFlagMode: () => void,
-    onSettingsModal: () => void,
     onResetGame: () => void,
 }
 
-function Interface({ timer, flagCount, fontsLoaded, isFlagMode, onResetGame, onToggleFlagMode, onSettingsModal }: InterfaceProps) {
+function Interface({ timer, flagCount, fontsLoaded, isFlagMode, onResetGame, onToggleFlagMode }: InterfaceProps) {
     let flagsLeft = numMines - flagCount;
     if (flagsLeft < 0) flagsLeft = 0;
 
@@ -32,7 +31,7 @@ function Interface({ timer, flagCount, fontsLoaded, isFlagMode, onResetGame, onT
             justifyContent: 'space-between',
             width: ((buttonLength + borderWidth) * 3.25),
         }}>
-            <ButtonSettings onSettingsModal={onSettingsModal}/>
+            <ButtonSettings navigation={navigation}/>
             <ButtonReset onResetGame={onResetGame}/>
             <ButtonFlag onToggleFlagMode={onToggleFlagMode} isFlagMode={isFlagMode}/>
         </View>

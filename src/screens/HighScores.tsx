@@ -1,6 +1,7 @@
 import { View, Text } from "react-native";
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../Types';
+import { NavigationProvider } from '../NavigationContext';
 
 type HighScoreProps = {
     navigation: StackNavigationProp<RootStackParamList, 'HighScores'>;
@@ -8,10 +9,12 @@ type HighScoreProps = {
 
 export default function HighScores({ navigation }:HighScoreProps) {
     return (
-        <View>
-            <Text>
-                HighScores Screen Sample Text
-            </Text>
-        </View>
+        <NavigationProvider navigation={navigation}>
+            <View>
+                <Text>
+                    HighScores Screen Sample Text
+                </Text>
+            </View>
+        </NavigationProvider>
     )
 }

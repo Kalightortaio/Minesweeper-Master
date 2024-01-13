@@ -1,6 +1,7 @@
 import { View, Text } from "react-native";
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../Types';
+import { NavigationProvider } from '../NavigationContext';
 
 type SettingsProps = {
     navigation: StackNavigationProp<RootStackParamList, 'Settings'>;
@@ -8,10 +9,12 @@ type SettingsProps = {
 
 export default function Settings({ navigation }: SettingsProps) {
     return (
-        <View>
-            <Text>
-                Settings Screen Sample Text
-            </Text>
-        </View>
+        <NavigationProvider navigation={navigation}>
+            <View>
+                <Text>
+                    Settings Screen Sample Text
+                </Text>
+            </View>
+        </NavigationProvider>
     )
 }

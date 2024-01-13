@@ -8,6 +8,7 @@ import { styles } from '../Styles';
 import { CellStateProps } from '../Types';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../Types';
+import { NavigationProvider } from '../NavigationContext';
 
 type ClassicModeProps = {
     navigation: StackNavigationProp<RootStackParamList, 'ClassicMode'>;
@@ -21,8 +22,6 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
     const [timerIntervalId, setTimerIntervalId] = useState<NodeJS.Timeout | null>(null);
     const [isPanOrPinchActive, setPanOrPinchActive] = useState(false);
     const [flagCount, setFlagCount] = useState(0);
-    // todo delete modal code, move to screen
-    const [modalVisible, setModalVisible] = useState(false);
     const [isFlagMode, setIsFlagMode] = useState(false);
     const fontsLoaded = useContext(FontsLoadedContext);
 
@@ -249,48 +248,40 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
         return { newRow, newCol };
     }
 
-    const onSettingsModal = () => {
-        // todo delete modal code, move to screen
-        setModalVisible(true);
-    };
-
-    const onCloseModal = () => {
-        // todo delete modal code, move to screen
-        setModalVisible(false);
-    };
-
     const onToggleFlagMode = () => {
         setIsFlagMode(currentFlagMode => !currentFlagMode);
     };
 
     return (
-        <View style={styles.container}>
-            <View style={styles.interface}>
-                <Interface timer={timer} flagCount={flagCount} fontsLoaded={fontsLoaded} isFlagMode={isFlagMode} onSettingsModal={onSettingsModal} onResetGame={onResetGame} onToggleFlagMode={onToggleFlagMode} />
+        <NavigationProvider navigation={navigation}>
+            <View style={styles.container}>
+                <View style={styles.interface}>
+                    <Interface timer={timer} flagCount={flagCount} fontsLoaded={fontsLoaded} isFlagMode={isFlagMode} onResetGame={onResetGame} onToggleFlagMode={onToggleFlagMode} />
+                </View>
+                <View style={styles.grid}>
+                    <Zoomable
+                        style={{ overflow: 'hidden', zIndex: 0 }}
+                        setPanOrPinchActive={setPanOrPinchActive}
+                    >
+                        {gridLines}
+                        {cells.map((row, rowIndex) => (
+                            <View key={`row-${rowIndex}`} style={styles.gridRow}>
+                                {row.map((cellState, colIndex) => (
+                                    <Cell
+                                        key={`${rowIndex}-${colIndex}`}
+                                        isPanOrPinchActive={isPanOrPinchActive}
+                                        revealCell={() => revealCell(rowIndex, colIndex)}
+                                        flagCell={() => flagCell(rowIndex, colIndex)}
+                                        isFlagMode={isFlagMode}
+                                        {...cellState}
+                                    />
+                                ))}
+                            </View>
+                        ))}
+                    </Zoomable>
+                </View>
             </View>
-            <View style={styles.grid}>
-                <Zoomable
-                    style={{ overflow: 'hidden', zIndex: 0 }}
-                    setPanOrPinchActive={setPanOrPinchActive}
-                >
-                    {gridLines}
-                    {cells.map((row, rowIndex) => (
-                        <View key={`row-${rowIndex}`} style={styles.gridRow}>
-                            {row.map((cellState, colIndex) => (
-                                <Cell
-                                    key={`${rowIndex}-${colIndex}`}
-                                    isPanOrPinchActive={isPanOrPinchActive}
-                                    revealCell={() => revealCell(rowIndex, colIndex)}
-                                    flagCell={() => flagCell(rowIndex, colIndex)}
-                                    isFlagMode={isFlagMode}
-                                    {...cellState}
-                                />
-                            ))}
-                        </View>
-                    ))}
-                </Zoomable>
-            </View>
-        </View>
+        </NavigationProvider>
     );
 }
 

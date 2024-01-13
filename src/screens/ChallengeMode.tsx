@@ -1,6 +1,7 @@
 import { View, Text } from "react-native";
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../Types';
+import { NavigationProvider } from '../NavigationContext';
 
 type ChallengeModeProps = {
     navigation: StackNavigationProp<RootStackParamList, 'ChallengeMode'>;
@@ -8,10 +9,12 @@ type ChallengeModeProps = {
 
 export default function ChallengeMode({ navigation }:ChallengeModeProps) {
     return (
-        <View>
-            <Text>
-                ChallengeMode Screen Sample Text
-            </Text>
-        </View>
+        <NavigationProvider navigation={navigation}>
+            <View>
+                <Text>
+                    ChallengeMode Screen Sample Text
+                </Text>
+            </View>
+        </NavigationProvider>
     )
 }

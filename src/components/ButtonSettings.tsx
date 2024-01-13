@@ -1,14 +1,12 @@
 import { TouchableWithoutFeedback, View, Text } from "react-native";
 import { borderWidth, buttonLength } from "../Constants";
+import { useNavigationContext } from '../NavigationContext';
 
-interface ButtonSettingsProps {
-    onSettingsModal: () => void;
-}
-
-function ButtonSettings({ onSettingsModal }: ButtonSettingsProps) {
+function ButtonSettings() {
+    const navigation = useNavigationContext();
 
     return (
-        <TouchableWithoutFeedback onPress={onSettingsModal}>
+        <TouchableWithoutFeedback onPress={() => navigation.navigate('Settings')}>
             <View style={{
                 height: buttonLength,
                 width: buttonLength,
