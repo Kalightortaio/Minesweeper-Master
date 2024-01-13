@@ -31,7 +31,7 @@ function Interface({ timer, flagCount, fontsLoaded, isFlagMode, onResetGame, onT
             justifyContent: 'space-between',
             width: ((buttonLength + borderWidth) * 3.25),
         }}>
-            <ButtonSettings navigation={navigation}/>
+            <ButtonSettings/>
             <ButtonReset onResetGame={onResetGame}/>
             <ButtonFlag onToggleFlagMode={onToggleFlagMode} isFlagMode={isFlagMode}/>
         </View>

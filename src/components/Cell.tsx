@@ -7,11 +7,12 @@ import { CellStateProps } from "../Types";
 interface CellComponentProps extends CellStateProps {
     isPanOrPinchActive: boolean,
     isFlagMode: boolean,
+    fontsLoaded: boolean,
     revealCell: () => void,
     flagCell: () => void,
 }
 
-function Cell({ isPanOrPinchActive, isFlagMode, revealCell, flagCell, ...cellStateProps }: CellComponentProps) {
+function Cell({ isPanOrPinchActive, isFlagMode, fontsLoaded, revealCell, flagCell, ...cellStateProps }: CellComponentProps) {
 
     const tapGesture = React.useMemo(
         () =>
@@ -60,7 +61,9 @@ function Cell({ isPanOrPinchActive, isFlagMode, revealCell, flagCell, ...cellSta
     return (
         <GestureDetector gesture={Gesture.Exclusive(doubleTapGesture, tapGesture)}>
             <View style={computeStyle('cell', { isRevealed: cellStateProps.isRevealed })}>
-                {cellStateProps.isMine || (cellStateProps.neighbors == 0) || !cellStateProps.isRevealed || <Text>
+                {fontsLoaded && !cellStateProps.isMine && (cellStateProps.neighbors != 0) && cellStateProps.isRevealed && <Text style={{
+                    fontFamily: 'MINESWEEPER'
+                }}>
                     {cellStateProps.neighbors}
                 </Text>}
                 {cellStateProps.isMine && cellStateProps.isRevealed && <Text>

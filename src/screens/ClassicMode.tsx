@@ -273,6 +273,7 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
                                         revealCell={() => revealCell(rowIndex, colIndex)}
                                         flagCell={() => flagCell(rowIndex, colIndex)}
                                         isFlagMode={isFlagMode}
+                                        fontsLoaded={fontsLoaded}
                                         {...cellState}
                                     />
                                 ))}
