@@ -1,14 +1,13 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { NavigationProvider } from '../NavigationContext';
+import { RootStackParamList } from '../Types';
+import { CellStateProps } from '../Types';
+import { FontsLoadedContext, borderWidth, cellSize, numColumns, numMines, numRows } from '../Constants';
 import Zoomable from '../components/Zoomable';
 import Interface from '../components/Interface';
 import Cell from '../components/Cell';
-import { FontsLoadedContext, cellSize, numColumns, numMines, numRows } from '../Constants';
-import { styles } from '../Styles';
-import { CellStateProps } from '../Types';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../Types';
-import { NavigationProvider } from '../NavigationContext';
 
 type ClassicModeProps = {
     navigation: StackNavigationProp<RootStackParamList, 'ClassicMode'>;
@@ -254,7 +253,7 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
 
     return (
         <NavigationProvider navigation={navigation}>
-            <View style={styles.container}>
+            <View style={styles.gameContainer}>
                 <View style={styles.interface}>
                     <Interface timer={timer} flagCount={flagCount} fontsLoaded={fontsLoaded} isFlagMode={isFlagMode} onResetGame={onResetGame} onToggleFlagMode={onToggleFlagMode} />
                 </View>
@@ -306,3 +305,57 @@ function initializeCells(): CellStateProps[][] {
     }
     return initialCells;
 }
+
+const styles = StyleSheet.create({
+    gameContainer: {
+        flex: 1,
+        alignItems: 'center',
+        borderWidth: borderWidth,
+        borderTopColor: '#fff',
+        borderLeftColor: '#fff',
+        borderBottomColor: '#7D7D7D',
+        borderRightColor: '#7D7D7D',
+        backgroundColor: '#BDBDBD',
+        justifyContent: 'space-evenly',
+    },
+    interface: {
+        height: (2 * cellSize),
+        width: ((2 * borderWidth) + (numColumns * cellSize)),
+        borderWidth: borderWidth,
+        borderTopColor: '#7D7D7D',
+        borderLeftColor: '#7D7D7D',
+        borderBottomColor: '#fff',
+        borderRightColor: '#fff',
+        backgroundColor: '#BDBDBD',
+    },
+    grid: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: borderWidth,
+        borderTopColor: '#7D7D7D',
+        borderLeftColor: '#7D7D7D',
+        borderBottomColor: '#fff',
+        borderRightColor: '#fff',
+        minHeight: (numRows * cellSize),
+        minWidth: ((2 * borderWidth) + (numColumns * cellSize)),
+    },
+    gridLineX: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        height: 1,
+        backgroundColor: '#7D7D7D',
+    },
+    gridLineY: {
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        width: 1,
+        backgroundColor: '#7D7D7D',
+    },
+    gridRow: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+    },
+})

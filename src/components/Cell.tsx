@@ -1,8 +1,8 @@
 import React from "react";
-import { Text, Vibration, View } from "react-native";
-import { computeStyle } from "../Styles";
+import { Text, Vibration, View, StyleSheet } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { CellStateProps } from "../Types";
+import { borderWidth, cellSize } from "../Constants";
 
 interface CellComponentProps extends CellStateProps {
     isPanOrPinchActive: boolean,
@@ -60,14 +60,16 @@ function Cell({ isPanOrPinchActive, isFlagMode, fontsLoaded, revealCell, flagCel
 
     return (
         <GestureDetector gesture={Gesture.Exclusive(doubleTapGesture, tapGesture)}>
-            <View style={computeStyle('cell', { isRevealed: cellStateProps.isRevealed })}>
+            <View style={[styles.cell, cellStateProps.isRevealed ? styles.isRevealed : {}]}>
                 {fontsLoaded && !cellStateProps.isMine && (cellStateProps.neighbors != 0) && cellStateProps.isRevealed && <Text style={{
-                    fontFamily: 'MINESWEEPER'
+                    fontFamily: 'MINESWEEPER',
                 }}>
                     {cellStateProps.neighbors}
                 </Text>}
-                {cellStateProps.isMine && cellStateProps.isRevealed && <Text>
-                    💣
+                {fontsLoaded && cellStateProps.isMine && cellStateProps.isRevealed && <Text style={{
+                    fontFamily: 'MINESWEEPER',
+                }}>
+                    {'*'}
                 </Text>}
                 {cellStateProps.isFlagged && <Text>
                     🚩
@@ -78,3 +80,22 @@ function Cell({ isPanOrPinchActive, isFlagMode, fontsLoaded, revealCell, flagCel
 }
 
 export default Cell;
+
+const styles = StyleSheet.create({
+    cell: {
+        height: cellSize,
+        width: cellSize,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: borderWidth,
+        borderTopColor: '#fff',
+        borderLeftColor: '#fff',
+        borderBottomColor: '#7D7D7D',
+        borderRightColor: '#7D7D7D',
+        backgroundColor: '#BDBDBD',
+    },
+    isRevealed: {
+        borderWidth: 0,
+        backgroundColor: 'transparent',
+    },
+})
