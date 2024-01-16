@@ -3,6 +3,7 @@ import { Text, Vibration, View, StyleSheet } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { CellStateProps } from "../Types";
 import { borderWidth, cellSize } from "../Constants";
+import SVGLoader from "./SVGLoader";
 
 interface CellComponentProps extends CellStateProps {
     isPanOrPinchActive: boolean,
@@ -58,22 +59,27 @@ function Cell({ isPanOrPinchActive, isFlagMode, fontsLoaded, revealCell, flagCel
         [isPanOrPinchActive, cellStateProps, isFlagMode, flagCell, revealCell] 
     );
 
+    let showCell = !cellStateProps.isMine && cellStateProps.isRevealed;
+    let showMine = cellStateProps.isMine && cellStateProps.isRevealed;
+
     return (
         <GestureDetector gesture={Gesture.Exclusive(doubleTapGesture, tapGesture)}>
-            <View style={[styles.cell, cellStateProps.isRevealed ? styles.isRevealed : {}]}>
-                {fontsLoaded && !cellStateProps.isMine && (cellStateProps.neighbors != 0) && cellStateProps.isRevealed && <Text style={{
-                    fontFamily: 'MINESWEEPER',
-                }}>
-                    {cellStateProps.neighbors}
-                </Text>}
-                {fontsLoaded && cellStateProps.isMine && cellStateProps.isRevealed && <Text style={{
-                    fontFamily: 'MINESWEEPER',
-                }}>
+            <View style={[styles.cell, cellStateProps.isRevealed ? styles.isRevealed : {}, cellStateProps.isFlagged ? styles.isFlagged : {}]}>
+                {showCell && (cellStateProps.neighbors != 0) && (
+                    <SVGLoader
+                        type="number"
+                        name={cellStateProps.neighbors.toString()}
+                    />
+                )}
+                {showMine && <Text>
                     {'*'}
                 </Text>}
-                {cellStateProps.isFlagged && <Text>
-                    🚩
-                </Text>}
+                {cellStateProps.isFlagged && (
+                    <SVGLoader
+                        type="symbol"
+                        name="flag"
+                    />
+                )}
             </View>
         </GestureDetector>
     );
@@ -97,5 +103,15 @@ const styles = StyleSheet.create({
     isRevealed: {
         borderWidth: 0,
         backgroundColor: 'transparent',
+        paddingTop: 1 + (cellSize / 6),
+        paddingLeft: 1 + (cellSize / 6),
+        paddingRight: (cellSize / 6),
+        paddingBottom: (cellSize / 6),
     },
+    isFlagged: {
+        paddingTop: 1 + (cellSize / 12),
+        paddingLeft: 1 + (cellSize / 12),
+        paddingRight: (cellSize / 12),
+        paddingBottom: (cellSize / 12),
+    }
 })

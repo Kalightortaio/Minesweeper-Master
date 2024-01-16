@@ -1,10 +1,10 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { NavigationProvider } from '../NavigationContext';
+import { NavigationProvider } from '../components/NavigationContext';
 import { RootStackParamList } from '../Types';
 import { CellStateProps } from '../Types';
-import { FontsLoadedContext, borderWidth, cellSize, numColumns, numMines, numRows } from '../Constants';
+import { FontsLoadedContext, borderWidth, cellSize, gridWidth, interfaceMargin, numColumns, numMines, numRows } from '../Constants';
 import Zoomable from '../components/Zoomable';
 import Interface from '../components/Interface';
 import Cell from '../components/Cell';
@@ -257,28 +257,30 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
                 <View style={styles.interface}>
                     <Interface timer={timer} flagCount={flagCount} fontsLoaded={fontsLoaded} isFlagMode={isFlagMode} onResetGame={onResetGame} onToggleFlagMode={onToggleFlagMode} />
                 </View>
-                <View style={styles.grid}>
-                    <Zoomable
-                        style={{ overflow: 'hidden', zIndex: 0 }}
-                        setPanOrPinchActive={setPanOrPinchActive}
-                    >
-                        {gridLines}
-                        {cells.map((row, rowIndex) => (
-                            <View key={`row-${rowIndex}`} style={styles.gridRow}>
-                                {row.map((cellState, colIndex) => (
-                                    <Cell
-                                        key={`${rowIndex}-${colIndex}`}
-                                        isPanOrPinchActive={isPanOrPinchActive}
-                                        revealCell={() => revealCell(rowIndex, colIndex)}
-                                        flagCell={() => flagCell(rowIndex, colIndex)}
-                                        isFlagMode={isFlagMode}
-                                        fontsLoaded={fontsLoaded}
-                                        {...cellState}
-                                    />
-                                ))}
-                            </View>
-                        ))}
-                    </Zoomable>
+                <View style={styles.gridContainer}>
+                    <View style={styles.grid}>
+                        <Zoomable
+                            style={{ overflow: 'hidden', zIndex: 0 }}
+                            setPanOrPinchActive={setPanOrPinchActive}
+                        >
+                            {gridLines}
+                            {cells.map((row, rowIndex) => (
+                                <View key={`row-${rowIndex}`} style={styles.gridRow}>
+                                    {row.map((cellState, colIndex) => (
+                                        <Cell
+                                            key={`${rowIndex}-${colIndex}`}
+                                            isPanOrPinchActive={isPanOrPinchActive}
+                                            revealCell={() => revealCell(rowIndex, colIndex)}
+                                            flagCell={() => flagCell(rowIndex, colIndex)}
+                                            isFlagMode={isFlagMode}
+                                            fontsLoaded={fontsLoaded}
+                                            {...cellState}
+                                        />
+                                    ))}
+                                </View>
+                            ))}
+                        </Zoomable>
+                    </View>
                 </View>
             </View>
         </NavigationProvider>
@@ -316,17 +318,22 @@ const styles = StyleSheet.create({
         borderBottomColor: '#7D7D7D',
         borderRightColor: '#7D7D7D',
         backgroundColor: '#BDBDBD',
-        justifyContent: 'space-evenly',
+        justifyContent: 'flex-start',
     },
     interface: {
         height: (2 * cellSize),
-        width: ((2 * borderWidth) + (numColumns * cellSize)),
+        width: gridWidth,
         borderWidth: borderWidth,
         borderTopColor: '#7D7D7D',
         borderLeftColor: '#7D7D7D',
         borderBottomColor: '#fff',
         borderRightColor: '#fff',
         backgroundColor: '#BDBDBD',
+        marginTop: interfaceMargin,
+    },
+    gridContainer: {
+        flex: 1,
+        justifyContent: 'space-around',
     },
     grid: {
         justifyContent: 'center',
@@ -337,7 +344,7 @@ const styles = StyleSheet.create({
         borderBottomColor: '#fff',
         borderRightColor: '#fff',
         minHeight: (numRows * cellSize),
-        minWidth: ((2 * borderWidth) + (numColumns * cellSize)),
+        minWidth: gridWidth,
     },
     gridLineX: {
         position: 'absolute',

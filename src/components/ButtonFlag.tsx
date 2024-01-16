@@ -1,5 +1,6 @@
 import { TouchableWithoutFeedback, View, Text } from "react-native";
 import { borderWidth, buttonLength } from "../Constants";
+import SVGLoader from "./SVGLoader";
 
 interface ButtonFlagProps {
     isFlagMode: boolean,
@@ -20,8 +21,23 @@ function ButtonFlag({ isFlagMode, onToggleFlagMode }: ButtonFlagProps) {
                 borderBottomColor: '#7D7D7D',
                 borderRightColor: '#7D7D7D',
                 backgroundColor: '#BDBDBD',
+                padding: (buttonLength / 10),
             }}>
-                {!isFlagMode && <Text>🚩</Text>}
+                {!isFlagMode && (
+                    <SVGLoader
+                        type="symbol"
+                        name="flag"
+                    />
+                )}
+                {isFlagMode && (
+                    <SVGLoader
+                        type="symbol"
+                        name="flag"
+                        style={{
+                            opacity: 0.5
+                        }}
+                    />
+                )}
             </View>
         </TouchableWithoutFeedback>
     )
