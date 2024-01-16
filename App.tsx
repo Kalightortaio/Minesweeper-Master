@@ -34,10 +34,10 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <FontsLoadedContext.Provider value={fontsLoaded}>
         <NavigationContainer>
-          <Stack.Navigator>
+          <Stack.Navigator initialRouteName="ClassicMode">
             <Stack.Screen 
               name="MainMenu" 
-              component={MainMenu} 
+              component={MainMenu}
               options={{ headerShown: true }}  
             />
             <Stack.Screen 
