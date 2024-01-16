@@ -10,6 +10,18 @@ interface SVGLoaderProps {
 function SVGLoader({ type, name, scale = 1, style }: SVGLoaderProps) {
     const transform = `scale(${scale})`;
 
+    const getViewBox = () => {
+        if (type === 'number') {
+            return "0 0 10 10";
+        } else if (type === 'symbol' && name === 'faceSmiling') {
+            return "0 0 17 17";
+        } else {
+            return "0 0 10 10";
+        }
+    };
+
+    const viewBox = getViewBox();
+
     function LoadSVG() {
         switch (type) {
             case 'number':
@@ -110,6 +122,25 @@ function SVGLoader({ type, name, scale = 1, style }: SVGLoaderProps) {
                                 />
                             </G>
                         )
+                    case 'faceSmiling':
+                        return (
+                            <G transform={transform}>
+                                <Path
+                                    d="M6,0 h5 v1 h2 v1 h1 v1 h1 v1 h1 v2 h1 v5 h-1 v2 h-1 v1 h-1 v1 h-1 v1 h-2 v1 h-5 v-1 h-2 v-1 h-1 v-1 h-1 v-1 h-1 v-2 h-1 v-5 h1 v-2 h1 v-1 h1 v-1 h1 v-1 h2 v-1"
+                                    fill="black"
+                                />
+                                <Path
+                                    d="M6,1 h5 v1 h2 v1 h1 v1 h1 v2 h1 v5 h-1 v2 h-1 v1 h-1 v1 h-2 v1 h-5 v-1 h-2 v-1 h-1 v-1 h-1 v-2 h-1 v-5 h1 v-2 h1 v-1 h1 v-1 h2 v-1"
+                                    fill="yellow"
+                                />
+                                <Rect x="5" y="6" width="2" height="2" fill="black" />
+                                <Rect x="10" y="6" width="2" height="2" fill="black" />
+                                <Path
+                                    d="M4,10 h1 v1 h1 v1 h5 v-1 h1 v-1 h1 v1 h-1 v1 h-1 v1 h-5 v-1 h-1 v-1 h-1 v-1"
+                                    fill="black"
+                                />
+                            </G>
+                        )
                     default:
                         console.warn(`Unknown name '${name}' for type 'symbol'`);
                         return (
@@ -125,7 +156,7 @@ function SVGLoader({ type, name, scale = 1, style }: SVGLoaderProps) {
     }
 
     return (
-        <Svg height="100%" width="100%" viewBox="0 0 10 10" style={style}>
+        <Svg height="100%" width="100%" viewBox={viewBox} style={style}>
             {LoadSVG()}
         </Svg>
     )
