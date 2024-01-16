@@ -21,7 +21,7 @@ function ButtonFlag({ isFlagMode, onToggleFlagMode }: ButtonFlagProps) {
                 borderBottomColor: '#7D7D7D',
                 borderRightColor: '#7D7D7D',
                 backgroundColor: '#BDBDBD',
-                padding: (buttonLength / 10),
+                padding: (buttonLength / 15),
             }}>
                 {!isFlagMode && (
                     <SVGLoader
