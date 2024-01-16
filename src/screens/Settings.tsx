@@ -1,7 +1,7 @@
 import { View, Text } from "react-native";
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../Types';
-import { NavigationProvider } from '../NavigationContext';
+import { NavigationProvider } from '../components/NavigationContext';
 
 type SettingsProps = {
     navigation: StackNavigationProp<RootStackParamList, 'Settings'>;

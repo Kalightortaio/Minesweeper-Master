@@ -1,6 +1,6 @@
 import { TouchableWithoutFeedback, View, Text } from "react-native";
 import { borderWidth, buttonLength } from "../Constants";
-import { useNavigationContext } from '../NavigationContext';
+import { useNavigationContext } from './NavigationContext';
 
 function ButtonSettings() {
     const navigation = useNavigationContext();

@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../Types';
 import { borderWidth } from "../Constants";
-import { NavigationProvider } from '../NavigationContext';
+import { NavigationProvider } from '../components/NavigationContext';
 
 type MainMenuProps = {
     navigation: StackNavigationProp<RootStackParamList, 'MainMenu'>;
