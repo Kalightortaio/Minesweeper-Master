@@ -3,7 +3,7 @@ import { Dimensions } from 'react-native';
 
 export const numColumns = 16;
 export const numRows = 30;
-export const difficulty = 1;
+export const difficulty = 2;
 export const numMines = Math.floor(numColumns * numRows * difficulty * 0.06875);
 export const borderWidth = 3;
 export const screenWidth = Dimensions.get('window').width;
