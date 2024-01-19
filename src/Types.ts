@@ -6,6 +6,7 @@ export interface CellStateProps {
     isMine: boolean;
     isCorner: boolean;
     neighbors: number;
+    adjacentCells: Array<{ row: number, col: number }>;
 }
 export type RootStackParamList = {
     MainMenu: undefined;

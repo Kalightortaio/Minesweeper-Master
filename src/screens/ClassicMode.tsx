@@ -11,7 +11,7 @@ import Cell from '../components/Cell';
 
 type ClassicModeProps = {
     navigation: StackNavigationProp<RootStackParamList, 'ClassicMode'>;
-};
+}
 
 export default function ClassicMode({ navigation }:ClassicModeProps) {
     const [isNewGame, setIsNewGame] = useState(true);
@@ -23,6 +23,12 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
     const [flagCount, setFlagCount] = useState(0);
     const [isFlagMode, setIsFlagMode] = useState(false);
     const fontsLoaded = useContext(FontsLoadedContext);
+
+    let localCells = cells;
+
+    const triggerRender = () => {
+        setCells(localCells);
+    }
 
     function onResetGame() {
         setIsNewGame(true);
@@ -36,33 +42,19 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
         }
 
         setCells(initializeCells());
+        localCells = cells;
     }
 
     useEffect(() => {
         if (isNewGame) {
-            let updatedCells = placeMines(cells);
-
+            placeMines();
             for (let row = 0; row < numRows; row++) {
                 for (let col = 0; col < numColumns; col++) {
-                    updatedCells = updateNeighbors(row, col, updatedCells);
+                    updateCellNeighbor(row, col);
                 }
             }
-
-            let adjustmentResult;
-            do {
-                adjustmentResult = adjustMinesPlacement(updatedCells);
-                updatedCells = adjustmentResult.adjustedCells;
-
-                if (adjustmentResult.needsAdjustment) {
-                    for (let row = 0; row < numRows; row++) {
-                        for (let col = 0; col < numColumns; col++) {
-                            updatedCells = updateNeighbors(row, col, updatedCells);
-                        }
-                    }
-                }
-            } while (adjustmentResult.needsAdjustment);
-
-            setCells(updatedCells);
+            adjustMinesPlacement();
+            triggerRender();
             setIsNewGame(false);
         }
     }, [isNewGame]);
@@ -100,16 +92,13 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
     }
 
     const revealCell = (row: number, col: number) => {
-        setCells(currentCells => {
-            let newCells = currentCells.map(row => row.slice());
-
             if (isFirstPress) {
                 for (let r = row - 1; r <= row + 1; r++) {
                     for (let c = col - 1; c <= col + 1; c++) {
-                        if (r >= 0 && r < numRows && c >= 0 && c < numColumns && newCells[r][c].isMine) {
-                            const { newRow, newCol } = findNewMineLocation(newCells);
-                            newCells[r][c].isMine = false;
-                            newCells[newRow][newCol].isMine = true;
+                        if (r >= 0 && r < numRows && c >= 0 && c < numColumns && localCells[r][c].isMine) {
+                            const { newRow, newCol } = findNewMineLocation();
+                            localCells[r][c].isMine = false;
+                            localCells[newRow][newCol].isMine = true;
                         }
                     }
                 }
@@ -118,87 +107,83 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
                     for (let c = col - 2; c <= col + 2; c++) {
                         if ((r < row - 1 || r > row + 1 || c < col - 1 || c > col + 1) &&
                             r >= 0 && r < numRows && c >= 0 && c < numColumns &&
-                            newCells[r][c].isMine && Math.random() < 0.3) {
-                            const { newRow, newCol } = findNewMineLocation(newCells);
-                            newCells[r][c].isMine = false;
-                            newCells[newRow][newCol].isMine = true;
+                            localCells[r][c].isMine && Math.random() < 0.3) {
+                            const { newRow, newCol } = findNewMineLocation();
+                            localCells[r][c].isMine = false;
+                            localCells[newRow][newCol].isMine = true;
                         }
                     }
                 }
 
                 for (let r = 0; r < numRows; r++) {
                     for (let c = 0; c < numColumns; c++) {
-                        newCells = updateNeighbors(r, c, newCells);
+                        updateCellNeighbor(r, c);
                     }
                 }
 
                 setIsFirstPress(false);
             }
 
-            if (!newCells[row][col].isMine) {
-                newCells = revealAdjacentCells(row, col, newCells);
+            if (!localCells[row][col].isMine) {
+                revealAdjacentCells(row, col);
             } else {
-                newCells[row][col].isRevealed = true;
+                localCells[row][col].isRevealed = true;
             }
 
-            return newCells;
-        });
+        triggerRender();
     };
 
-    function revealAdjacentCells(row: number, col: number, cells: CellStateProps[][]) {
-        if (row < 0 || row >= numRows || col < 0 || col >= numColumns || cells[row][col].isRevealed) {
-            return cells;
+    function revealAdjacentCells(row: number, col: number) {
+        if (row < 0 || row >= numRows || col < 0 || col >= numColumns || localCells[row][col].isRevealed) {
+            return;
         }
-        cells[row][col].isRevealed = true;
+        localCells[row][col].isRevealed = true;
 
-        if (cells[row][col].neighbors === 0) {
+        if (localCells[row][col].neighbors === 0) {
             for (let r = Math.max(0, row - 1); r <= Math.min(row + 1, numRows - 1); r++) {
                 for (let c = Math.max(0, col - 1); c <= Math.min(col + 1, numColumns - 1); c++) {
-                    if (!cells[r][c].isRevealed && !cells[r][c].isFlagged) {
-                        revealAdjacentCells(r, c, cells);
+                    if (!localCells[r][c].isRevealed && !localCells[r][c].isFlagged) {
+                        revealAdjacentCells(r, c);
                     }
                 }
             }
         }
-
-        return cells;
     }
 
     const flagCell = (row: number, col: number) => {
-        setCells(currentCells => {
-            const newCells = [...currentCells];
-            newCells[row] = [...newCells[row]];
-            const isFlagged = !newCells[row][col].isFlagged;
-            newCells[row][col] = { ...newCells[row][col], isFlagged: isFlagged };
-            updateFlagCount(isFlagged);
-            return newCells;
-        });
-    };
+        const newFlagState = !localCells[row][col].isFlagged
+        localCells[row][col].isFlagged = newFlagState;
+        updateFlagCount(newFlagState);
+        triggerRender();
+    }
 
     const updateFlagCount = (isFlagged: boolean) => {
-        setFlagCount(prevFlagCount => isFlagged ? prevFlagCount + 1 : prevFlagCount - 1);
+        setFlagCount((prevFlagCount: number) => isFlagged ? prevFlagCount + 1 : prevFlagCount - 1);
     };
 
-    function placeMines(currentCells: CellStateProps[][]) {
-        const newCells = currentCells.map(row => row.map(cell => ({ ...cell, isMine: false })));
+    function placeMines() {
         let MinesPlaced = 0;
 
         while (MinesPlaced < numMines) {
             const randomRow = Math.floor(Math.random() * numRows);
             const randomCol = Math.floor(Math.random() * numColumns);
 
-            if (!newCells[randomRow][randomCol].isMine) {
-                newCells[randomRow][randomCol].isMine = true;
+            if (localCells[randomRow][randomCol].isMine === false) {
+                localCells[randomRow][randomCol].isMine = true;
                 MinesPlaced++;
             }
         }
-
-        return newCells;
     }
 
-    function updateNeighbors(row: number, col: number, cells: CellStateProps[][]): CellStateProps[][] {
-        const newCells = cells.map(row => row.slice());
+    function updateCellAndNeighbors(row: number, col: number) {
+        updateCellNeighbor(row, col);
 
+        localCells[row][col].adjacentCells.forEach(({ row: adjRow, col: adjCol }) => {
+            updateCellNeighbor(adjRow, adjCol);
+        });
+    }
+
+    function updateCellNeighbor(row: number, col: number) {
         const startRow = Math.max(0, row - 1);
         const endRow = Math.min(numRows - 1, row + 1);
         const startCol = Math.max(0, col - 1);
@@ -208,47 +193,43 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
         for (let r = startRow; r <= endRow; r++) {
             for (let c = startCol; c <= endCol; c++) {
                 if (r === row && c === col) continue;
-                if (newCells[r][c].isMine) {
+                if (localCells[r][c].isMine) {
                     mineCount++;
                 }
             }
         }
-        newCells[row][col] = { ...newCells[row][col], neighbors: mineCount };
-        return newCells;
+        localCells[row][col].neighbors = mineCount;
     }
 
-    function adjustMinesPlacement(cells: CellStateProps[][]) {
-        let adjustedCells = cells.map(row => row.slice());
-        let needsAdjustment = false;
-
+    function adjustMinesPlacement() {
         for (let row = 0; row < numRows; row++) {
             for (let col = 0; col < numColumns; col++) {
-                const cell = adjustedCells[row][col];
+                const cell = localCells[row][col];
                 if (cell.isMine && (
                     (cell.isCorner && cell.neighbors === 3) ||
                     (!cell.isCorner && cell.neighbors === 8))) {
-                    const { newRow, newCol } = findNewMineLocation(adjustedCells);
-                    adjustedCells[row][col].isMine = false;
-                    adjustedCells[newRow][newCol].isMine = true;
-                    needsAdjustment = true;
+                    const { newRow, newCol } = findNewMineLocation();
+                    localCells[row][col].isMine = false;
+                    updateCellAndNeighbors(row, col);
+                    localCells[newRow][newCol].isMine = true;
+                    updateCellAndNeighbors(newRow, newCol);
                 }
             }
         }
-        return { adjustedCells, needsAdjustment };
     }
 
-    function findNewMineLocation(cells: CellStateProps[][]) {
+    function findNewMineLocation() {
         let newRow, newCol, cell;
         do {
             newRow = Math.floor(Math.random() * numRows);
             newCol = Math.floor(Math.random() * numColumns);
-            cell = cells[newRow][newCol];
+            cell = localCells[newRow][newCol];
         } while (cell.isMine || (cell.isCorner && cell.neighbors === 3) || (!cell.isCorner && cell.neighbors === 8));
         return { newRow, newCol };
     }
 
     const onToggleFlagMode = () => {
-        setIsFlagMode(currentFlagMode => !currentFlagMode);
+        setIsFlagMode((currentFlagMode: boolean) => !currentFlagMode);
     };
 
     return (
@@ -293,6 +274,7 @@ function initializeCells(): CellStateProps[][] {
         const currentRow = [];
         for (let col = 0; col < numColumns; col++) {
             const isCorner = (row === 0 || row === numRows - 1) && (col === 0 || col === numColumns - 1);
+            const adjacentCells = getAdjacentCells(row, col);
             currentRow.push({
                 rowIndex: row,
                 columnIndex: col,
@@ -301,11 +283,24 @@ function initializeCells(): CellStateProps[][] {
                 isMine: false,
                 isCorner: isCorner,
                 neighbors: 0,
+                adjacentCells: adjacentCells,
             });
         }
         initialCells.push(currentRow);
     }
     return initialCells;
+}
+
+function getAdjacentCells(row: number, col: number): { row: number, col: number }[] {
+    const adjacentCells = [];
+    for (let r = Math.max(0, row - 1); r <= Math.min(row + 1, numRows - 1); r++) {
+        for (let c = Math.max(0, col - 1); c <= Math.min(col + 1, numColumns - 1); c++) {
+            if (r !== row || c !== col) {
+                adjacentCells.push({ row: r, col: c });
+            }
+        }
+    }
+    return adjacentCells;
 }
 
 const styles = StyleSheet.create({
@@ -365,4 +360,4 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         justifyContent: 'center',
     },
-})
+});
