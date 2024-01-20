@@ -64,16 +64,19 @@ function Cell({ isPanOrPinchActive, isFlagMode, fontsLoaded, revealCell, flagCel
 
     return (
         <GestureDetector gesture={Gesture.Exclusive(doubleTapGesture, tapGesture)}>
-            <View style={[styles.cell, cellStateProps.isRevealed ? styles.isRevealed : {}, cellStateProps.isFlagged ? styles.isFlagged : {}]}>
+            <View style={[styles.cell, cellStateProps.isRevealed ? styles.isRevealed : {}, cellStateProps.isFlagged ? styles.isFlagged : {}, cellStateProps.isMine ? styles.isMine : {}, (cellStateProps.isRevealed && cellStateProps.isMine) ? styles.isRevealedMine : {}]}>
                 {showCell && (cellStateProps.neighbors != 0) && (
                     <SVGLoader
                         type="number"
                         name={cellStateProps.neighbors.toString()}
                     />
                 )}
-                {showMine && <Text>
-                    {'*'}
-                </Text>}
+                {showMine && (
+                    <SVGLoader
+                        type="symbol"
+                        name="mine"
+                    />
+                )}
                 {cellStateProps.isFlagged && (
                     <SVGLoader
                         type="symbol"
@@ -113,5 +116,15 @@ const styles = StyleSheet.create({
         paddingLeft: 1 + (cellSize / 12),
         paddingRight: (cellSize / 12),
         paddingBottom: (cellSize / 12),
+    },
+    isMine: {
+        paddingTop: 1 + (cellSize / 12),
+        paddingLeft: 1 + (cellSize / 12),
+        paddingRight: (cellSize / 12),
+        paddingBottom: (cellSize / 12),
+    },
+    isRevealedMine: {
+        backgroundColor: 'red',
+        zIndex: -1,
     }
 })
