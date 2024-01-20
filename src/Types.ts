@@ -9,6 +9,7 @@ export interface CellStateProps {
     adjacentCells: Array<{ row: number, col: number }>;
 }
 export type RootStackParamList = {
+    SplashScreen: undefined;
     MainMenu: undefined;
     ClassicMode: undefined;
     HighScores: undefined;
