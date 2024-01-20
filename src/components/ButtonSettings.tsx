@@ -1,6 +1,7 @@
 import { TouchableWithoutFeedback, View, Text } from "react-native";
 import { borderWidth, buttonLength } from "../Constants";
 import { useNavigationContext } from './NavigationContext';
+import SVGLoader from "./SVGLoader";
 
 function ButtonSettings() {
     const navigation = useNavigationContext();
@@ -17,8 +18,15 @@ function ButtonSettings() {
                 borderBottomColor: '#7D7D7D',
                 borderRightColor: '#7D7D7D',
                 backgroundColor: '#BDBDBD',
+                paddingTop: 1 + (buttonLength / 12),
+                paddingLeft: 1 + (buttonLength / 12),
+                paddingRight: (buttonLength / 12),
+                paddingBottom: (buttonLength / 12),
             }}>
-                <Text>⚙️</Text>
+                <SVGLoader
+                    type="symbol"
+                    name="mine"
+                />
             </View>
         </TouchableWithoutFeedback>
     )
