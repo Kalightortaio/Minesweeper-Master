@@ -1,4 +1,4 @@
-###Minesweeper Master
+##Minesweeper Master
 
 In active development, will update description soon.
 
