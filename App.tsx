@@ -1,6 +1,6 @@
 import * as Font from 'expo-font';
-import React, { useEffect, useRef, useState } from 'react';
-import { Animated, StatusBar } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StatusBar } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -16,7 +16,6 @@ const Stack = createNativeStackNavigator();
 
 export default function App() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
-  const fadeAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     StatusBar.setHidden(true);
@@ -44,7 +43,7 @@ export default function App() {
           <Stack.Navigator initialRouteName="SplashScreen">
             {fontsLoaded ? (
               <>
-              <Stack.Screen 
+              <Stack.Screen
                 name="MainMenu" 
                 component={MainMenu}
                 options={{ headerShown: false }}  
@@ -71,11 +70,11 @@ export default function App() {
               />
               </>
             ) : (
-              <Stack.Screen
-                name="SplashScreen"
-                component={Splash}
-                options={{ headerShown: false }}
-              />
+                <Stack.Screen
+                  name="SplashScreen"
+                  component={Splash}
+                  options={{ headerShown: false }}
+                />
             )}
           </Stack.Navigator>
         </NavigationContainer>

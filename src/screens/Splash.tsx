@@ -2,7 +2,6 @@ import { View, StyleSheet } from "react-native";
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../Types';
 import { NavigationProvider } from '../components/NavigationContext';
-
 type SplashProps = {
     navigation: StackNavigationProp<RootStackParamList, 'SplashScreen'>;
 };
