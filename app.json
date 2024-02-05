@@ -32,6 +32,9 @@
         "projectId": "060ec8ed-a4be-4f98-b395-23e7cb62abb9"
       }
     },
-    "owner": "kalightortaio"
+    "owner": "kalightortaio",
+    "plugins": [
+      "expo-font"
+    ]
   }
 }
