@@ -48,11 +48,6 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
     useEffect(() => {
         if (isNewGame) {
             placeMines();
-            for (let row = 0; row < numRows; row++) {
-                for (let col = 0; col < numColumns; col++) {
-                    updateCellNeighbor(row, col);
-                }
-            }
             adjustMinesPlacement();
             triggerRender();
             setIsNewGame(false);
@@ -92,43 +87,29 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
     }
 
     const revealCell = (row: number, col: number) => {
-            if (isFirstPress) {
-                for (let r = row - 1; r <= row + 1; r++) {
-                    for (let c = col - 1; c <= col + 1; c++) {
-                        if (r >= 0 && r < numRows && c >= 0 && c < numColumns && localCells[r][c].isMine) {
+        if (isFirstPress) {
+            for (let r = row - 2; r <= row + 2; r++) {
+                for (let c = col - 2; c <= col + 2; c++) {
+                    if (r >= 0 && r < numRows && c >= 0 && c < numColumns) {
+                        const isInImmediateRadius = r >= row - 1 && r <= row + 1 && c >= col - 1 && c <= col + 1;
+                        const shouldRemoveMine = isInImmediateRadius || (!isInImmediateRadius && Math.random() < 0.3);
+                        if (localCells[r][c].isMine && shouldRemoveMine) {
                             const { newRow, newCol } = findNewMineLocation();
                             localCells[r][c].isMine = false;
                             localCells[newRow][newCol].isMine = true;
+                            updateCellNeighborsInMove(r, c, newRow, newCol);
                         }
                     }
                 }
-
-                for (let r = row - 2; r <= row + 2; r++) {
-                    for (let c = col - 2; c <= col + 2; c++) {
-                        if ((r < row - 1 || r > row + 1 || c < col - 1 || c > col + 1) &&
-                            r >= 0 && r < numRows && c >= 0 && c < numColumns &&
-                            localCells[r][c].isMine && Math.random() < 0.3) {
-                            const { newRow, newCol } = findNewMineLocation();
-                            localCells[r][c].isMine = false;
-                            localCells[newRow][newCol].isMine = true;
-                        }
-                    }
-                }
-
-                for (let r = 0; r < numRows; r++) {
-                    for (let c = 0; c < numColumns; c++) {
-                        updateCellNeighbor(r, c);
-                    }
-                }
-
-                setIsFirstPress(false);
             }
+            setIsFirstPress(false);
+        }
 
-            if (!localCells[row][col].isMine) {
-                revealAdjacentCells(row, col);
-            } else {
-                localCells[row][col].isRevealed = true;
-            }
+        if (!localCells[row][col].isMine) {
+            revealAdjacentCells(row, col);
+        } else {
+            localCells[row][col].isRevealed = true;
+        }
 
         triggerRender();
     };
@@ -170,36 +151,23 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
 
             if (localCells[randomRow][randomCol].isMine === false) {
                 localCells[randomRow][randomCol].isMine = true;
+                adjustAdjacentCellNeighbors(randomRow, randomCol, 1)
                 MinesPlaced++;
             }
         }
     }
 
-    function updateCellAndNeighbors(row: number, col: number) {
-        updateCellNeighbor(row, col);
+    function updateCellNeighborsInMove(oldRow: number, oldCol: number, newRow: number, newCol: number) {
+        adjustAdjacentCellNeighbors(oldRow, oldCol, -1);
+        adjustAdjacentCellNeighbors(newRow, newCol, 1);
+    }
 
+    function adjustAdjacentCellNeighbors(row: number, col: number, adjustment: number) {
         localCells[row][col].adjacentCells.forEach(({ row: adjRow, col: adjCol }) => {
-            updateCellNeighbor(adjRow, adjCol);
+            localCells[adjRow][adjCol].neighbors += adjustment;
         });
     }
 
-    function updateCellNeighbor(row: number, col: number) {
-        const startRow = Math.max(0, row - 1);
-        const endRow = Math.min(numRows - 1, row + 1);
-        const startCol = Math.max(0, col - 1);
-        const endCol = Math.min(numColumns - 1, col + 1);
-
-        let mineCount = 0;
-        for (let r = startRow; r <= endRow; r++) {
-            for (let c = startCol; c <= endCol; c++) {
-                if (r === row && c === col) continue;
-                if (localCells[r][c].isMine) {
-                    mineCount++;
-                }
-            }
-        }
-        localCells[row][col].neighbors = mineCount;
-    }
 
     function adjustMinesPlacement() {
         for (let row = 0; row < numRows; row++) {
@@ -210,9 +178,8 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
                     (!cell.isCorner && cell.neighbors === 8))) {
                     const { newRow, newCol } = findNewMineLocation();
                     localCells[row][col].isMine = false;
-                    updateCellAndNeighbors(row, col);
                     localCells[newRow][newCol].isMine = true;
-                    updateCellAndNeighbors(newRow, newCol);
+                    updateCellNeighborsInMove(row, col, newRow, newCol);
                 }
             }
         }
