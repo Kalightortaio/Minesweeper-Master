@@ -52,7 +52,7 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <FontsLoadedContext.Provider value={fontsLoaded}>
         {appReady && <NavigationContainer onReady={onLayoutRootView}>
-           <Stack.Navigator initialRouteName="MainMenu">
+          <Stack.Navigator initialRouteName="MainMenu">
               <Stack.Screen
                 name="MainMenu" 
                 component={MainMenu}
@@ -81,6 +81,6 @@ export default function App() {
           </Stack.Navigator>
         </NavigationContainer>}
       </FontsLoadedContext.Provider>
-    </GestureHandlerRootView >
+    </GestureHandlerRootView>
   );
 }
