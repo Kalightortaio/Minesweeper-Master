@@ -1,69 +1,21 @@
 import React from "react";
-import { Text, Vibration, View, StyleSheet } from "react-native";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { View, StyleSheet, TouchableWithoutFeedback } from "react-native";
 import { CellStateProps } from "../Types";
 import { borderWidth, cellSize } from "../Constants";
 import SVGLoader from "./SVGLoader";
 
 interface CellComponentProps extends CellStateProps {
-    isPanOrPinchActive: boolean,
-    isFlagMode: boolean,
+    onCellPress: () => void,
     fontsLoaded: boolean,
-    revealCell: () => void,
-    flagCell: () => void,
 }
 
-function Cell({ isPanOrPinchActive, isFlagMode, fontsLoaded, revealCell, flagCell, ...cellStateProps }: CellComponentProps) {
-
-    const tapGesture = React.useMemo(
-        () =>
-        Gesture.Tap()
-        .runOnJS(true)
-        .onStart(() => {
-            if (!isPanOrPinchActive) {
-                if (isFlagMode) {
-                    if (!cellStateProps.isRevealed) {
-                        flagCell();
-                        Vibration.vibrate(100);
-                    }
-                } else {
-                    if (!cellStateProps.isRevealed && !cellStateProps.isFlagged) {
-                        revealCell();
-                    }
-                }
-            }
-        }),
-        [isPanOrPinchActive, cellStateProps, isFlagMode, flagCell, revealCell]  
-    );
-
-    const doubleTapGesture = React.useMemo(
-        () =>
-            Gesture.Tap()
-                .runOnJS(true)
-                .maxDelay(200)
-                .numberOfTaps(2)
-                .onStart(() => {
-                    if (!isPanOrPinchActive) {
-                        if (isFlagMode) {
-                            if (!cellStateProps.isRevealed && !cellStateProps.isFlagged) {
-                                revealCell();
-                            }
-                        } else {
-                            if (!cellStateProps.isRevealed) {
-                                flagCell();
-                                Vibration.vibrate(100);
-                            }
-                        }
-                    }
-                }),
-        [isPanOrPinchActive, cellStateProps, isFlagMode, flagCell, revealCell] 
-    );
+function Cell({ onCellPress, fontsLoaded, ...cellStateProps }: CellComponentProps) {
 
     let showCell = !cellStateProps.isMine && cellStateProps.isRevealed;
     let showMine = cellStateProps.isMine && cellStateProps.isRevealed;
 
     return (
-        <GestureDetector gesture={Gesture.Exclusive(doubleTapGesture, tapGesture)}>
+        <TouchableWithoutFeedback onPress={() => onCellPress()}>
             <View style={[styles.cell, cellStateProps.isRevealed ? styles.isRevealed : {}, cellStateProps.isFlagged ? styles.isFlagged : {}, cellStateProps.isMine ? styles.isMine : {}, (cellStateProps.isRevealed && cellStateProps.isMine) ? styles.isRevealedMine : {}]}>
                 {showCell && (cellStateProps.neighbors != 0) && (
                     <SVGLoader
@@ -84,7 +36,7 @@ function Cell({ isPanOrPinchActive, isFlagMode, fontsLoaded, revealCell, flagCel
                     />
                 )}
             </View>
-        </GestureDetector>
+        </TouchableWithoutFeedback>
     );
 }
 

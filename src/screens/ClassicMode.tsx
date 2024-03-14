@@ -1,13 +1,15 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Vibration } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { NavigationProvider } from '../components/NavigationContext';
 import { RootStackParamList } from '../Types';
 import { CellStateProps } from '../Types';
-import { FontsLoadedContext, borderWidth, cellSize, gridWidth, interfaceMargin, numColumns, numMines, numRows } from '../Constants';
+import { FontsLoadedContext, borderWidth, cellSize, gridMargin, gridWidth, numColumns, numMines, numRows } from '../Constants';
 import Zoomable from '../components/Zoomable';
 import Interface from '../components/Interface';
 import Cell from '../components/Cell';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { throttle } from 'lodash';
 
 type ClassicModeProps = {
     navigation: StackNavigationProp<RootStackParamList, 'ClassicMode'>;
@@ -18,55 +20,36 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
     const [cells, setCells] = useState<CellStateProps[][]>(initializeCells());
     const [isFirstPress, setIsFirstPress] = useState(true);
     const [timer, setTimer] = useState(0);
-    const [timerIntervalId, setTimerIntervalId] = useState<NodeJS.Timeout | null>(null);
     const [isPanOrPinchActive, setPanOrPinchActive] = useState(false);
     const [flagCount, setFlagCount] = useState(0);
     const [isFlagMode, setIsFlagMode] = useState(false);
     const fontsLoaded = useContext(FontsLoadedContext);
-
-    let localCells = cells;
-
-    const triggerRender = () => {
-        setCells(localCells);
-    }
 
     function onResetGame() {
         setIsNewGame(true);
         setIsFirstPress(true);
         setTimer(0);
         setFlagCount(0);
-
-        if (timerIntervalId) {
-            clearInterval(timerIntervalId);
-            setTimerIntervalId(null);
-        }
-
         setCells(initializeCells());
-        localCells = cells;
     }
 
     useEffect(() => {
         if (isNewGame) {
-            placeMines();
-            adjustMinesPlacement();
-            triggerRender();
+            let localCells = [...cells];
+            placeMines(localCells);
+            setCells(localCells);
             setIsNewGame(false);
         }
     }, [isNewGame]);
 
     useEffect(() => {
-        if (!isFirstPress && !timerIntervalId) {
+        if (!isFirstPress) {
             const intervalId = setInterval(() => {
                 setTimer(t => t + 1);
             }, 1000);
-            setTimerIntervalId(intervalId);
+            return () => clearInterval(intervalId);
         }
-        return () => {
-            if (timerIntervalId) {
-                clearInterval(timerIntervalId);
-            }
-        };
-    }, [isFirstPress, timerIntervalId]);
+    }, [isFirstPress]);
 
     const gridLines = [];
     for (let i = 1; i < numRows; i++) {
@@ -86,35 +69,61 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
         );
     }
 
+    const onCellPress = throttle((row: number, col: number) => {
+        if (!isPanOrPinchActive) {
+            let localCells = [...cells];
+            if (isFlagMode) {
+                if (!localCells[row][col].isRevealed) {
+                    flagCell(row, col);
+                }
+            } else {
+                if (!localCells[row][col].isRevealed && !localCells[row][col].isFlagged) {
+                    revealCell(row, col);
+                }
+            }
+        }
+    }, 20, {'leading': true,'trailing': false})
+
+    const longPressGesture =
+        Gesture.LongPress()
+            .runOnJS(true)
+            .minDuration(200)
+            .onStart(() => {
+                Vibration.vibrate(100);
+                setIsFlagMode(!isFlagMode);
+            })
+
     const revealCell = (row: number, col: number) => {
         if (isFirstPress) {
+            let localCells = [...cells];
             for (let r = row - 2; r <= row + 2; r++) {
                 for (let c = col - 2; c <= col + 2; c++) {
                     if (r >= 0 && r < numRows && c >= 0 && c < numColumns) {
                         const isInImmediateRadius = r >= row - 1 && r <= row + 1 && c >= col - 1 && c <= col + 1;
                         const shouldRemoveMine = isInImmediateRadius || (!isInImmediateRadius && Math.random() < 0.3);
                         if (localCells[r][c].isMine && shouldRemoveMine) {
-                            const { newRow, newCol } = findNewMineLocation();
+                            const { newRow, newCol } = findNewMineLocation(localCells);
                             localCells[r][c].isMine = false;
                             localCells[newRow][newCol].isMine = true;
-                            updateCellNeighborsInMove(r, c, newRow, newCol);
+                            updateCellNeighborsInMove(r, c, newRow, newCol, localCells);
                         }
                     }
                 }
             }
             setIsFirstPress(false);
+            setCells(localCells);
         }
-
+        let localCells = [...cells];
         if (!localCells[row][col].isMine) {
-            revealAdjacentCells(row, col);
-        } else {
+            revealAdjacentCells(row, col, localCells);
+            setCells(localCells)
+        } else if (localCells[row][col].isRevealed !== true) {
             localCells[row][col].isRevealed = true;
+            setCells(localCells)
         }
-
-        triggerRender();
     };
 
-    function revealAdjacentCells(row: number, col: number) {
+    function revealAdjacentCells(row: number, col: number, localCells: CellStateProps[][]) {
         if (row < 0 || row >= numRows || col < 0 || col >= numColumns || localCells[row][col].isRevealed) {
             return;
         }
@@ -124,7 +133,7 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
             for (let r = Math.max(0, row - 1); r <= Math.min(row + 1, numRows - 1); r++) {
                 for (let c = Math.max(0, col - 1); c <= Math.min(col + 1, numColumns - 1); c++) {
                     if (!localCells[r][c].isRevealed && !localCells[r][c].isFlagged) {
-                        revealAdjacentCells(r, c);
+                        revealAdjacentCells(r, c, localCells);
                     }
                 }
             }
@@ -132,17 +141,18 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
     }
 
     const flagCell = (row: number, col: number) => {
+        let localCells = [...cells];
         const newFlagState = !localCells[row][col].isFlagged
         localCells[row][col].isFlagged = newFlagState;
         updateFlagCount(newFlagState);
-        triggerRender();
+        setCells(localCells);
     }
 
     const updateFlagCount = (isFlagged: boolean) => {
         setFlagCount((prevFlagCount: number) => isFlagged ? prevFlagCount + 1 : prevFlagCount - 1);
     };
 
-    function placeMines() {
+    function placeMines(localCells: CellStateProps[][]) {
         let MinesPlaced = 0;
 
         while (MinesPlaced < numMines) {
@@ -151,41 +161,38 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
 
             if (localCells[randomRow][randomCol].isMine === false) {
                 localCells[randomRow][randomCol].isMine = true;
-                adjustAdjacentCellNeighbors(randomRow, randomCol, 1)
+                adjustAdjacentCellNeighbors(randomRow, randomCol, 1, localCells)
                 MinesPlaced++;
             }
         }
-    }
 
-    function updateCellNeighborsInMove(oldRow: number, oldCol: number, newRow: number, newCol: number) {
-        adjustAdjacentCellNeighbors(oldRow, oldCol, -1);
-        adjustAdjacentCellNeighbors(newRow, newCol, 1);
-    }
-
-    function adjustAdjacentCellNeighbors(row: number, col: number, adjustment: number) {
-        localCells[row][col].adjacentCells.forEach(({ row: adjRow, col: adjCol }) => {
-            localCells[adjRow][adjCol].neighbors += adjustment;
-        });
-    }
-
-
-    function adjustMinesPlacement() {
         for (let row = 0; row < numRows; row++) {
             for (let col = 0; col < numColumns; col++) {
                 const cell = localCells[row][col];
                 if (cell.isMine && (
                     (cell.isCorner && cell.neighbors === 3) ||
                     (!cell.isCorner && cell.neighbors === 8))) {
-                    const { newRow, newCol } = findNewMineLocation();
+                    const { newRow, newCol } = findNewMineLocation(localCells);
                     localCells[row][col].isMine = false;
                     localCells[newRow][newCol].isMine = true;
-                    updateCellNeighborsInMove(row, col, newRow, newCol);
+                    updateCellNeighborsInMove(row, col, newRow, newCol, localCells);
                 }
             }
         }
     }
 
-    function findNewMineLocation() {
+    function updateCellNeighborsInMove(oldRow: number, oldCol: number, newRow: number, newCol: number, localCells: CellStateProps[][]) {
+        adjustAdjacentCellNeighbors(oldRow, oldCol, -1, localCells);
+        adjustAdjacentCellNeighbors(newRow, newCol, 1, localCells);
+    }
+
+    function adjustAdjacentCellNeighbors(row: number, col: number, adjustment: number, localCells: CellStateProps[][]) {
+        localCells[row][col].adjacentCells.forEach(({ row: adjRow, col: adjCol }) => {
+            localCells[adjRow][adjCol].neighbors += adjustment;
+        });
+    }
+
+    function findNewMineLocation(localCells: CellStateProps[][]) {
         let newRow, newCol, cell;
         do {
             newRow = Math.floor(Math.random() * numRows);
@@ -199,28 +206,57 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
         setIsFlagMode((currentFlagMode: boolean) => !currentFlagMode);
     };
 
+    function initializeCells(): CellStateProps[][] {
+        const initialCells: CellStateProps[][] = [];
+        for (let row = 0; row < numRows; row++) {
+            const currentRow = [];
+            for (let col = 0; col < numColumns; col++) {
+                const isCorner = (row === 0 || row === numRows - 1) && (col === 0 || col === numColumns - 1);
+                const adjacentCells = getAdjacentCells(row, col);
+                currentRow.push({
+                    rowIndex: row,
+                    columnIndex: col,
+                    isRevealed: false,
+                    isFlagged: false,
+                    isMine: false,
+                    isCorner: isCorner,
+                    neighbors: 0,
+                    adjacentCells: adjacentCells,
+                });
+            }
+            initialCells.push(currentRow);
+        }
+        return initialCells;
+    }
+
+    function getAdjacentCells(row: number, col: number): { row: number, col: number }[] {
+        const adjacentCells = [];
+        for (let r = Math.max(0, row - 1); r <= Math.min(row + 1, numRows - 1); r++) {
+            for (let c = Math.max(0, col - 1); c <= Math.min(col + 1, numColumns - 1); c++) {
+                if (r !== row || c !== col) {
+                    adjacentCells.push({ row: r, col: c });
+                }
+            }
+        }
+        return adjacentCells;
+    }
+
     return (
         <NavigationProvider navigation={navigation}>
             <View style={styles.gameContainer}>
                 <View style={styles.interface}>
                     <Interface timer={timer} flagCount={flagCount} fontsLoaded={fontsLoaded} isFlagMode={isFlagMode} onResetGame={onResetGame} onToggleFlagMode={onToggleFlagMode} />
                 </View>
-                <View style={styles.gridContainer}>
+                <GestureDetector gesture={longPressGesture}>
                     <View style={styles.grid}>
-                        <Zoomable
-                            style={{ overflow: 'hidden', zIndex: 0 }}
-                            setPanOrPinchActive={setPanOrPinchActive}
-                        >
+                        <Zoomable style={{ overflow: 'hidden', zIndex: 0 }} setPanOrPinchActive={setPanOrPinchActive}>
                             {gridLines}
                             {cells.map((row, rowIndex) => (
                                 <View key={`row-${rowIndex}`} style={styles.gridRow}>
                                     {row.map((cellState, colIndex) => (
                                         <Cell
                                             key={`${rowIndex}-${colIndex}`}
-                                            isPanOrPinchActive={isPanOrPinchActive}
-                                            revealCell={() => revealCell(rowIndex, colIndex)}
-                                            flagCell={() => flagCell(rowIndex, colIndex)}
-                                            isFlagMode={isFlagMode}
+                                            onCellPress={() => onCellPress(rowIndex, colIndex)}
                                             fontsLoaded={fontsLoaded}
                                             {...cellState}
                                         />
@@ -229,73 +265,34 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
                             ))}
                         </Zoomable>
                     </View>
-                </View>
+                </GestureDetector>
             </View>
         </NavigationProvider>
     );
-}
-
-function initializeCells(): CellStateProps[][] {
-    const initialCells: CellStateProps[][] = [];
-    for (let row = 0; row < numRows; row++) {
-        const currentRow = [];
-        for (let col = 0; col < numColumns; col++) {
-            const isCorner = (row === 0 || row === numRows - 1) && (col === 0 || col === numColumns - 1);
-            const adjacentCells = getAdjacentCells(row, col);
-            currentRow.push({
-                rowIndex: row,
-                columnIndex: col,
-                isRevealed: false,
-                isFlagged: false,
-                isMine: false,
-                isCorner: isCorner,
-                neighbors: 0,
-                adjacentCells: adjacentCells,
-            });
-        }
-        initialCells.push(currentRow);
-    }
-    return initialCells;
-}
-
-function getAdjacentCells(row: number, col: number): { row: number, col: number }[] {
-    const adjacentCells = [];
-    for (let r = Math.max(0, row - 1); r <= Math.min(row + 1, numRows - 1); r++) {
-        for (let c = Math.max(0, col - 1); c <= Math.min(col + 1, numColumns - 1); c++) {
-            if (r !== row || c !== col) {
-                adjacentCells.push({ row: r, col: c });
-            }
-        }
-    }
-    return adjacentCells;
 }
 
 const styles = StyleSheet.create({
     gameContainer: {
         flex: 1,
         alignItems: 'center',
+        justifyContent: 'center',
         borderWidth: borderWidth,
         borderTopColor: '#fff',
         borderLeftColor: '#fff',
         borderBottomColor: '#7D7D7D',
         borderRightColor: '#7D7D7D',
         backgroundColor: '#BDBDBD',
-        justifyContent: 'flex-start',
     },
     interface: {
-        height: (2 * cellSize),
-        width: gridWidth,
         borderWidth: borderWidth,
         borderTopColor: '#7D7D7D',
         borderLeftColor: '#7D7D7D',
         borderBottomColor: '#fff',
         borderRightColor: '#fff',
         backgroundColor: '#BDBDBD',
-        marginTop: interfaceMargin,
-    },
-    gridContainer: {
-        flex: 1,
-        justifyContent: 'space-around',
+        width: '100%',
+        maxWidth: gridWidth,
+        marginTop: gridMargin,
     },
     grid: {
         justifyContent: 'center',
@@ -305,8 +302,9 @@ const styles = StyleSheet.create({
         borderLeftColor: '#7D7D7D',
         borderBottomColor: '#fff',
         borderRightColor: '#fff',
-        minHeight: (numRows * cellSize),
-        minWidth: gridWidth,
+        width: '100%',
+        maxWidth: gridWidth,
+        marginVertical: gridMargin,
     },
     gridLineX: {
         position: 'absolute',
