@@ -5,7 +5,7 @@ import { borderWidth, cellSize } from "../Constants";
 import SVGLoader from "./SVGLoader";
 
 interface CellComponentProps extends CellStateProps {
-    onCellPress: () => void,
+    onCellPress: (isLongPress: boolean) => void,
     fontsLoaded: boolean,
 }
 
@@ -15,7 +15,7 @@ function Cell({ onCellPress, fontsLoaded, ...cellStateProps }: CellComponentProp
     let showMine = cellStateProps.isMine && cellStateProps.isRevealed;
 
     return (
-        <TouchableWithoutFeedback onPress={() => onCellPress()}>
+        <TouchableWithoutFeedback onPress={() => onCellPress(false)} onLongPress={() => onCellPress(true)} delayLongPress={300}>
             <View style={[styles.cell, cellStateProps.isRevealed ? styles.isRevealed : {}, cellStateProps.isFlagged ? styles.isFlagged : {}, cellStateProps.isMine ? styles.isMine : {}, (cellStateProps.isRevealed && cellStateProps.isMine) ? styles.isRevealedMine : {}]}>
                 {showCell && (cellStateProps.neighbors != 0) && (
                     <SVGLoader

@@ -8,7 +8,6 @@ import { FontsLoadedContext, borderWidth, cellSize, gridMargin, gridWidth, numCo
 import Zoomable from '../components/Zoomable';
 import Interface from '../components/Interface';
 import Cell from '../components/Cell';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { throttle } from 'lodash';
 
 type ClassicModeProps = {
@@ -69,29 +68,34 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
         );
     }
 
-    const onCellPress = throttle((row: number, col: number) => {
+    const onCellPress = throttle((row: number, col: number, long: boolean ) => {
         if (!isPanOrPinchActive) {
             let localCells = [...cells];
-            if (isFlagMode) {
-                if (!localCells[row][col].isRevealed) {
-                    flagCell(row, col);
+            if (!long) {
+                if (isFlagMode) {
+                    if (!localCells[row][col].isRevealed) {
+                        flagCell(row, col);
+                    }
+                } else {
+                    if (!localCells[row][col].isRevealed && !localCells[row][col].isFlagged) {
+                        revealCell(row, col);
+                    }
                 }
             } else {
-                if (!localCells[row][col].isRevealed && !localCells[row][col].isFlagged) {
-                    revealCell(row, col);
+                if (isFlagMode) {
+                    if (!localCells[row][col].isRevealed && !localCells[row][col].isFlagged) {
+                        Vibration.vibrate(100);
+                        revealCell(row, col);
+                    }
+                } else {
+                    if (!localCells[row][col].isRevealed) {
+                        Vibration.vibrate(100);
+                        flagCell(row, col);
+                    }
                 }
             }
         }
     }, 20, {'leading': true,'trailing': false})
-
-    const longPressGesture =
-        Gesture.LongPress()
-            .runOnJS(true)
-            .minDuration(200)
-            .onStart(() => {
-                Vibration.vibrate(100);
-                setIsFlagMode(!isFlagMode);
-            })
 
     const revealCell = (row: number, col: number) => {
         if (isFirstPress) {
@@ -247,25 +251,23 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
                 <View style={styles.interface}>
                     <Interface timer={timer} flagCount={flagCount} fontsLoaded={fontsLoaded} isFlagMode={isFlagMode} onResetGame={onResetGame} onToggleFlagMode={onToggleFlagMode} />
                 </View>
-                <GestureDetector gesture={longPressGesture}>
-                    <View style={styles.grid}>
-                        <Zoomable style={{ overflow: 'hidden', zIndex: 0 }} setPanOrPinchActive={setPanOrPinchActive}>
-                            {gridLines}
-                            {cells.map((row, rowIndex) => (
-                                <View key={`row-${rowIndex}`} style={styles.gridRow}>
-                                    {row.map((cellState, colIndex) => (
-                                        <Cell
-                                            key={`${rowIndex}-${colIndex}`}
-                                            onCellPress={() => onCellPress(rowIndex, colIndex)}
-                                            fontsLoaded={fontsLoaded}
-                                            {...cellState}
-                                        />
-                                    ))}
-                                </View>
-                            ))}
-                        </Zoomable>
-                    </View>
-                </GestureDetector>
+                <View style={styles.grid}>
+                    <Zoomable style={{ overflow: 'hidden', zIndex: 0 }} setPanOrPinchActive={setPanOrPinchActive}>
+                        {gridLines}
+                        {cells.map((row, rowIndex) => (
+                            <View key={`row-${rowIndex}`} style={styles.gridRow}>
+                                {row.map((cellState, colIndex) => (
+                                    <Cell
+                                        key={`${rowIndex}-${colIndex}`}
+                                        onCellPress={(isLongPress) => onCellPress(rowIndex, colIndex, isLongPress)}
+                                        fontsLoaded={fontsLoaded}
+                                        {...cellState}
+                                    />
+                                ))}
+                            </View>
+                        ))}
+                    </Zoomable>
+                </View>
             </View>
         </NavigationProvider>
     );
