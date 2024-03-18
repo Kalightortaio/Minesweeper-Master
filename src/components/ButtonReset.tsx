@@ -1,18 +1,19 @@
 import { TouchableWithoutFeedback, View, Text } from "react-native";
-import { borderWidth, buttonLength } from "../Constants";
+import { borderWidth, interfaceComponentHeight } from "../Constants";
 import SVGLoader from "./SVGLoader";
 
 interface ButtonResetProps {
     onResetGame: () => void;
+    faceState: string
 }
 
-function ButtonReset({ onResetGame }: ButtonResetProps) {
+function ButtonReset({ onResetGame, faceState }: ButtonResetProps) {
 
     return (
         <TouchableWithoutFeedback onPress={onResetGame}>
             <View style={{
-                height: buttonLength,
-                width: buttonLength,
+                height: interfaceComponentHeight,
+                width: interfaceComponentHeight,
                 alignItems: 'center',
                 borderWidth: borderWidth,
                 borderTopColor: '#fff',
@@ -20,11 +21,11 @@ function ButtonReset({ onResetGame }: ButtonResetProps) {
                 borderBottomColor: '#7D7D7D',
                 borderRightColor: '#7D7D7D',
                 backgroundColor: '#BDBDBD',
-                padding: (buttonLength / 15),
+                padding: (interfaceComponentHeight / 15),
             }}>
                 <SVGLoader
                     type="symbol"
-                    name="faceSmiling"
+                    name={faceState}
                 />
             </View>
         </TouchableWithoutFeedback>

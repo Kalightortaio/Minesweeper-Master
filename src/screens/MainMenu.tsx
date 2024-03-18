@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../Types';
-import { borderWidth, gridHeight, gridMargin, gridWidth, interfaceHeight } from "../Constants";
+import { borderWidth, gridHeight, gridMargin, gridOuterWidth } from "../Constants";
 import { NavigationProvider } from '../components/NavigationContext';
 
 type MainMenuProps = {
@@ -12,12 +12,12 @@ export default function MainMenu({ navigation }: MainMenuProps) {
     return (
         <NavigationProvider navigation={navigation}>
             <View style={styles.menuContainer}>
-                <View style={styles.interface}>
+                <View style={styles.interfaceContainer}>
                     <Text style={styles.titleText}>
                         Minesweeper Master
                     </Text>
                 </View>
-                <View style={styles.grid}>
+                <View style={styles.gridContainer}>
                     <View style={styles.buttonContainer}>
                         <TouchableOpacity
                             onPress={() => navigation.navigate('ClassicMode')}
@@ -74,21 +74,20 @@ const styles = StyleSheet.create({
         borderRightColor: '#7D7D7D',
         backgroundColor: '#BDBDBD',
     },
-    interface: {
+    interfaceContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
         borderWidth: borderWidth,
         borderTopColor: '#7D7D7D',
         borderLeftColor: '#7D7D7D',
         borderBottomColor: '#fff',
         borderRightColor: '#fff',
         backgroundColor: '#BDBDBD',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: interfaceHeight,
         width: '100%',
-        maxWidth: gridWidth,
+        maxWidth: gridOuterWidth,
         marginTop: gridMargin,
     },
-    grid: {
+    gridContainer: {
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: borderWidth,
@@ -98,7 +97,7 @@ const styles = StyleSheet.create({
         borderRightColor: '#fff',
         height: gridHeight,
         width: '100%',
-        maxWidth: gridWidth,
+        maxWidth: gridOuterWidth,
         marginVertical: gridMargin,
     },
     titleText: {

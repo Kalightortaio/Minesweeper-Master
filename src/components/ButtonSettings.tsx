@@ -1,5 +1,5 @@
 import { TouchableWithoutFeedback, View, Text } from "react-native";
-import { borderWidth, buttonLength } from "../Constants";
+import { borderWidth, interfaceComponentHeight } from "../Constants";
 import { useNavigationContext } from './NavigationContext';
 import SVGLoader from "./SVGLoader";
 
@@ -9,8 +9,8 @@ function ButtonSettings() {
     return (
         <TouchableWithoutFeedback onPress={() => navigation.navigate('Settings')}>
             <View style={{
-                height: buttonLength,
-                width: buttonLength,
+                height: interfaceComponentHeight,
+                width: interfaceComponentHeight,
                 alignItems: 'center',
                 borderWidth: borderWidth,
                 borderTopColor: '#fff',
@@ -18,10 +18,10 @@ function ButtonSettings() {
                 borderBottomColor: '#7D7D7D',
                 borderRightColor: '#7D7D7D',
                 backgroundColor: '#BDBDBD',
-                paddingTop: 1 + (buttonLength / 12),
-                paddingLeft: 1 + (buttonLength / 12),
-                paddingRight: (buttonLength / 12),
-                paddingBottom: (buttonLength / 12),
+                paddingTop: 1 + (interfaceComponentHeight / 12),
+                paddingLeft: 1 + (interfaceComponentHeight / 12),
+                paddingRight: (interfaceComponentHeight / 12),
+                paddingBottom: (interfaceComponentHeight / 12),
             }}>
                 <SVGLoader
                     type="symbol"
