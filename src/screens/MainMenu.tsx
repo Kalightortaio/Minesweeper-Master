@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../Types';
-import { borderWidth, gridHeight, gridMargin, gridOuterWidth } from "../Constants";
+import { borderWidth, gridHeight, gridMargin, gridOuterWidth, interfaceOuterHeight } from "../Constants";
 import { NavigationProvider } from '../components/NavigationContext';
 
 type MainMenuProps = {
@@ -86,6 +86,8 @@ const styles = StyleSheet.create({
         width: '100%',
         maxWidth: gridOuterWidth,
         marginTop: gridMargin,
+        height: interfaceOuterHeight,
+        maxHeight: interfaceOuterHeight,
     },
     gridContainer: {
         justifyContent: 'center',
