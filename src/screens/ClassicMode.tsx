@@ -1,10 +1,10 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, Vibration } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { NavigationProvider } from '../components/NavigationContext';
 import { RootStackParamList } from '../Types';
 import { CellStateProps } from '../Types';
-import { FontsLoadedContext, borderWidth, cellSize, gridMargin, gridWidth, numColumns, numMines, numRows } from '../Constants';
+import { borderWidth, cellSize, gridMargin, gridOuterWidth, interfaceOuterHeight, numColumns, numLives, numMines, numRows, practiceMode } from '../Constants';
 import Zoomable from '../components/Zoomable';
 import Interface from '../components/Interface';
 import Cell from '../components/Cell';
@@ -17,18 +17,34 @@ type ClassicModeProps = {
 export default function ClassicMode({ navigation }:ClassicModeProps) {
     const [isNewGame, setIsNewGame] = useState(true);
     const [cells, setCells] = useState<CellStateProps[][]>(initializeCells());
+    const [mineLocations, setMineLocations] = useState<{row:number,col:number}[]>([]);
     const [isFirstPress, setIsFirstPress] = useState(true);
     const [timer, setTimer] = useState(0);
+    const pauseTimerRef = useRef(false);
     const [isPanOrPinchActive, setPanOrPinchActive] = useState(false);
     const [flagCount, setFlagCount] = useState(0);
     const [isFlagMode, setIsFlagMode] = useState(false);
-    const fontsLoaded = useContext(FontsLoadedContext);
+    const [isLostGame, setIsLostGame] = useState(false);
+    const [livesLeft, setLivesLeft] = useState(initializeLives());
+    const [faceState, setFaceState] = useState<"faceSmiling"|"faceChilling"|"faceFrowning">("faceSmiling");
+
+    function initializeLives(): number {
+        if (practiceMode) {
+            return numLives;
+        } else {
+            return 0;
+        }
+    }
 
     function onResetGame() {
         setIsNewGame(true);
         setIsFirstPress(true);
         setTimer(0);
         setFlagCount(0);
+        setIsLostGame(false);
+        setFaceState("faceSmiling");
+        setLivesLeft(initializeLives());
+        setMineLocations([]);
         setCells(initializeCells());
     }
 
@@ -42,30 +58,42 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
     }, [isNewGame]);
 
     useEffect(() => {
-        if (!isFirstPress) {
+        if (isFirstPress) {
+            pauseTimerRef.current = false;
+        } else {
             const intervalId = setInterval(() => {
-                setTimer(t => t + 1);
+                if (!pauseTimerRef.current) {
+                    setTimer(t => t + 1);
+                }
             }, 1000);
             return () => clearInterval(intervalId);
         }
     }, [isFirstPress]);
 
-    const gridLines = [];
-    for (let i = 1; i < numRows; i++) {
-        gridLines.push(
-            <View
-                key={`horizontal-line-${i}`}
-                style={[styles.gridLineX, { top: i * cellSize }]}
-            />
-        );
+    useEffect(() => {
+        if (!isFirstPress) {
+            if (mineLocations.length === 0 && flagCount === numMines) {
+                processWinCon();
+            }
+        }
+    }, [mineLocations, flagCount]);
+
+    const stopTimer = () => {
+        pauseTimerRef.current = true;
+    };
+
+    const processLoseCon = () => {
+        stopTimer();
+        setFaceState("faceFrowning");
+        setIsLostGame(true);
+        mineLocations.forEach(({ row, col }) => {
+            revealLostGame(row, col);
+        });
     }
-    for (let j = 1; j < numColumns; j++) {
-        gridLines.push(
-            <View
-                key={`vertical-line-${j}`}
-                style={[styles.gridLineY, { left: j * cellSize }]}
-            />
-        );
+
+    const processWinCon = () => {
+        stopTimer();
+        setFaceState("faceChilling");
     }
 
     const onCellPress = throttle((row: number, col: number, long: boolean ) => {
@@ -73,7 +101,7 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
             let localCells = [...cells];
             if (!long) {
                 if (isFlagMode) {
-                    if (!localCells[row][col].isRevealed) {
+                    if (!localCells[row][col].isRevealed && !isFirstPress) {
                         flagCell(row, col);
                     }
                 } else {
@@ -88,7 +116,7 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
                         revealCell(row, col);
                     }
                 } else {
-                    if (!localCells[row][col].isRevealed) {
+                    if (!localCells[row][col].isRevealed && !isFirstPress) {
                         Vibration.vibrate(100);
                         flagCell(row, col);
                     }
@@ -108,7 +136,9 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
                         if (localCells[r][c].isMine && shouldRemoveMine) {
                             const { newRow, newCol } = findNewMineLocation(localCells);
                             localCells[r][c].isMine = false;
+                            updateMineLocation(r, c, "remove");
                             localCells[newRow][newCol].isMine = true;
+                            updateMineLocation(newRow, newCol, "add");
                             updateCellNeighborsInMove(r, c, newRow, newCol, localCells);
                         }
                     }
@@ -118,12 +148,20 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
             setCells(localCells);
         }
         let localCells = [...cells];
-        if (!localCells[row][col].isMine) {
+        if (!localCells[row][col].isMine && !localCells[row][col].isRevealed) {
             revealAdjacentCells(row, col, localCells);
-            setCells(localCells)
+            setCells(localCells);
         } else if (localCells[row][col].isRevealed !== true) {
             localCells[row][col].isRevealed = true;
-            setCells(localCells)
+            setCells(localCells);
+            if (localCells[row][col].isMine) {
+                localCells[row][col].isTriggeredMine = true;
+                if (livesLeft === 0) {
+                    processLoseCon();
+                } else {
+                    setLivesLeft(livesLeft - 1)
+                }
+            }
         }
     };
 
@@ -133,7 +171,7 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
         }
         localCells[row][col].isRevealed = true;
 
-        if (localCells[row][col].neighbors === 0) {
+        if (localCells[row][col].neighbors === 0 && !localCells[row][col].isMine) {
             for (let r = Math.max(0, row - 1); r <= Math.min(row + 1, numRows - 1); r++) {
                 for (let c = Math.max(0, col - 1); c <= Math.min(col + 1, numColumns - 1); c++) {
                     if (!localCells[r][c].isRevealed && !localCells[r][c].isFlagged) {
@@ -144,17 +182,41 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
         }
     }
 
+    const revealLostGame = (row: number, col: number) => {
+        let localCells = [...cells];
+        if (!localCells[row][col].isMine) {
+            console.error("Invalid Mine Location in Array: " + row + "," + col + ".")
+        } else if (!localCells[row][col].isRevealed) {
+            localCells[row][col].isRevealed = true;
+            setCells(localCells);
+        }
+    };
+
     const flagCell = (row: number, col: number) => {
         let localCells = [...cells];
         const newFlagState = !localCells[row][col].isFlagged
         localCells[row][col].isFlagged = newFlagState;
         updateFlagCount(newFlagState);
+        if (localCells[row][col].isFlagged && localCells[row][col].isMine) {
+            updateMineLocation(row, col, "remove");
+        } else if (!localCells[row][col].isFlagged && localCells[row][col].isMine) {
+            updateMineLocation(row, col, "add");
+        }
         setCells(localCells);
+        
     }
 
     const updateFlagCount = (isFlagged: boolean) => {
         setFlagCount((prevFlagCount: number) => isFlagged ? prevFlagCount + 1 : prevFlagCount - 1);
     };
+
+    const updateMineLocation = (row: number, col: number, mode: "add" | "remove") => {
+        if (mode === "add") {
+            setMineLocations(prevLocations => [...prevLocations, { row, col }]);
+        } else {
+            setMineLocations(prevLocations => prevLocations.filter(mine => !(mine.row === row && mine.col === col)));
+        }
+    }
 
     function placeMines(localCells: CellStateProps[][]) {
         let MinesPlaced = 0;
@@ -165,6 +227,7 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
 
             if (localCells[randomRow][randomCol].isMine === false) {
                 localCells[randomRow][randomCol].isMine = true;
+                updateMineLocation(randomRow, randomCol, "add");
                 adjustAdjacentCellNeighbors(randomRow, randomCol, 1, localCells)
                 MinesPlaced++;
             }
@@ -172,14 +235,18 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
 
         for (let row = 0; row < numRows; row++) {
             for (let col = 0; col < numColumns; col++) {
-                const cell = localCells[row][col];
-                if (cell.isMine && (
+                let cell = localCells[row][col];
+                while (cell.isMine && (
+                    (cell.neighbors === 8) ||
                     (cell.isCorner && cell.neighbors === 3) ||
-                    (!cell.isCorner && cell.neighbors === 8))) {
+                    (cell.isEdge && cell.neighbors === 5))) {
                     const { newRow, newCol } = findNewMineLocation(localCells);
                     localCells[row][col].isMine = false;
+                    updateMineLocation(row, col, "remove");
                     localCells[newRow][newCol].isMine = true;
+                    updateMineLocation(newRow, newCol, "add");
                     updateCellNeighborsInMove(row, col, newRow, newCol, localCells);
+                    cell = localCells[newRow][newCol];
                 }
             }
         }
@@ -202,7 +269,7 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
             newRow = Math.floor(Math.random() * numRows);
             newCol = Math.floor(Math.random() * numColumns);
             cell = localCells[newRow][newCol];
-        } while (cell.isMine || (cell.isCorner && cell.neighbors === 3) || (!cell.isCorner && cell.neighbors === 8));
+        } while (cell.isMine || (cell.neighbors === 8) || (cell.isCorner && cell.neighbors === 3) || (!cell.isEdge && cell.neighbors === 5));
         return { newRow, newCol };
     }
 
@@ -216,6 +283,7 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
             const currentRow = [];
             for (let col = 0; col < numColumns; col++) {
                 const isCorner = (row === 0 || row === numRows - 1) && (col === 0 || col === numColumns - 1);
+                const isEdge = (row === 0 || row === numRows - 1) || (col === 0 || col === numColumns - 1);
                 const adjacentCells = getAdjacentCells(row, col);
                 currentRow.push({
                     rowIndex: row,
@@ -223,7 +291,9 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
                     isRevealed: false,
                     isFlagged: false,
                     isMine: false,
+                    isTriggeredMine: false,
                     isCorner: isCorner,
+                    isEdge: isEdge,
                     neighbors: 0,
                     adjacentCells: adjacentCells,
                 });
@@ -245,13 +315,31 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
         return adjacentCells;
     }
 
+    const gridLines = [];
+    for (let i = 1; i < numRows; i++) {
+        gridLines.push(
+            <View
+                key={`horizontal-line-${i}`}
+                style={[styles.gridLineX, { top: i * cellSize }]}
+            />
+        );
+    }
+    for (let j = 1; j < numColumns; j++) {
+        gridLines.push(
+            <View
+                key={`vertical-line-${j}`}
+                style={[styles.gridLineY, { left: j * cellSize }]}
+            />
+        );
+    }
+
     return (
         <NavigationProvider navigation={navigation}>
             <View style={styles.gameContainer}>
-                <View style={styles.interface}>
-                    <Interface timer={timer} flagCount={flagCount} fontsLoaded={fontsLoaded} isFlagMode={isFlagMode} onResetGame={onResetGame} onToggleFlagMode={onToggleFlagMode} />
+                <View style={styles.interfaceContainer}>
+                    <Interface timer={timer} flagCount={flagCount} isFlagMode={isFlagMode} faceState={faceState} onResetGame={onResetGame} onToggleFlagMode={onToggleFlagMode} />
                 </View>
-                <View style={styles.grid}>
+                <View style={styles.gridContainer}>
                     <Zoomable style={{ overflow: 'hidden', zIndex: 0 }} setPanOrPinchActive={setPanOrPinchActive}>
                         {gridLines}
                         {cells.map((row, rowIndex) => (
@@ -260,7 +348,7 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
                                     <Cell
                                         key={`${rowIndex}-${colIndex}`}
                                         onCellPress={(isLongPress) => onCellPress(rowIndex, colIndex, isLongPress)}
-                                        fontsLoaded={fontsLoaded}
+                                        lostGame = {isLostGame}
                                         {...cellState}
                                     />
                                 ))}
@@ -285,18 +373,18 @@ const styles = StyleSheet.create({
         borderRightColor: '#7D7D7D',
         backgroundColor: '#BDBDBD',
     },
-    interface: {
+    interfaceContainer: {
         borderWidth: borderWidth,
         borderTopColor: '#7D7D7D',
         borderLeftColor: '#7D7D7D',
         borderBottomColor: '#fff',
         borderRightColor: '#fff',
-        backgroundColor: '#BDBDBD',
         width: '100%',
-        maxWidth: gridWidth,
+        maxWidth: gridOuterWidth,
         marginTop: gridMargin,
+        maxHeight: interfaceOuterHeight,
     },
-    grid: {
+    gridContainer: {
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: borderWidth,
@@ -305,7 +393,7 @@ const styles = StyleSheet.create({
         borderBottomColor: '#fff',
         borderRightColor: '#fff',
         width: '100%',
-        maxWidth: gridWidth,
+        maxWidth: gridOuterWidth,
         marginVertical: gridMargin,
     },
     gridLineX: {
