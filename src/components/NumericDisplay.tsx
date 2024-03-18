@@ -1,5 +1,5 @@
 import { Text, View } from "react-native";
-import { borderWidth, cellSize, screenWidth } from "../Constants";
+import { interfaceComponentHeight, interfacePadding, screenWidth } from "../Constants";
 
 interface NumericDisplayProps {
     value: number,
@@ -7,38 +7,66 @@ interface NumericDisplayProps {
 }
 
 function NumericDisplay({ value, shouldRender }: NumericDisplayProps) {
-    let display = formatNumber(value);
+    const formatNumber = (num: number): string => {
+        return Math.max(0, Math.min(999, num)).toString().padStart(3, '0');
+    };
+
+    const formattedValue = formatNumber(value);
+    const digits = formattedValue.split('');
+    const opacityForDigit = (digit: string, index: number, encounteredNonZero: boolean, isZeroValue: boolean): number => {
+        if (isZeroValue && index === digits.length - 1) return 1;
+        if (encounteredNonZero) return 1;
+        if (digit !== '0') return 1;
+        return 0;
+    };
+
+    const isZeroValue = value === 0;
+    let encounteredNonZero = false;
+
+    const scaleText = (fontSize: number): number => {
+        const baseScreenWidth = 450;
+        const scale = screenWidth / baseScreenWidth;
+
+        return Math.round(fontSize * scale);
+    };
+
     return (
         <View style={{
-            height: (2 * (cellSize - borderWidth)) - (screenWidth * 0.02),
-            width: (screenWidth * 0.1475),
-            padding: (screenWidth * 0.01),
+            height: interfaceComponentHeight,
+            maxHeight: interfaceComponentHeight,
             backgroundColor: 'black',
+            justifyContent: 'center',
+            paddingHorizontal: interfacePadding,
         }}
         >
             <View style={{ 
-                flex: 1, 
                 justifyContent: 'center',
                 alignItems: 'flex-end',
-
+                flexDirection: 'row',
             }}>
-                {shouldRender && <Text style={{
-                    fontFamily: 'DSEG',
-                    color: '#FF0000',
-                    fontSize: (screenWidth * 0.05),
-                }}
-                >
-                    {display}
-                </Text>}
-                {shouldRender && <Text style={{
+                {shouldRender && digits.map((digit, index) => {
+                    if (digit !== '0') encounteredNonZero = true;
+
+                    return (
+                        <Text key={index} style={{
+                            fontFamily: 'DSEG',
+                            color: '#FF0000',
+                            fontSize: scaleText(24),
+                            opacity: opacityForDigit(digit, index, encounteredNonZero, isZeroValue),
+                        }}>
+                            {digit}
+                        </Text>
+                    );
+                })}
+                {shouldRender && <Text numberOfLines={1} style={{
                     position: 'absolute',
                     fontFamily: 'DSEG',
                     color: '#FF0000',
-                    fontSize: (screenWidth * 0.05),
+                    fontSize: scaleText(24),
                     opacity: 0.5,
                     top: '50%',
                     right: 0,
-                    transform: [{ translateY: -(screenWidth * 0.05) / 2 }],
+                    transform: [{ translateY: -1 * scaleText(24) / 2 }],
                 }}
                 >
                     888
@@ -49,13 +77,3 @@ function NumericDisplay({ value, shouldRender }: NumericDisplayProps) {
 }
 
 export default NumericDisplay;
-
-function formatNumber(num: number) {
-    if (num < 1) {
-        num = 0;
-    }
-    if (num > 999) {
-    num = 999;
-    }
-    return num.toString().padStart(3, ' ');
-}
