@@ -21,5 +21,11 @@ export const interfaceComponentHeight = (1.5 * cellSize);
 export const boardWidth = numColumns * cellSize;
 export const boardHeight = numRows * cellSize;
 export const FontsLoadedContext = React.createContext(false);
-
 export const backgroundColor: string = "#BDBDBD";
+
+export const scaleText = (fontSize: number): number => {
+    const baseScreenWidth = 450;
+    const scale = screenWidth / baseScreenWidth;
+    
+    return Math.round(fontSize * scale);
+};

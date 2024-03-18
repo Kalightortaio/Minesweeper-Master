@@ -1,5 +1,5 @@
 import { Text, View } from "react-native";
-import { interfaceComponentHeight, interfacePadding, screenWidth } from "../Constants";
+import { interfaceComponentHeight, interfacePadding, scaleText, screenWidth } from "../Constants";
 
 interface NumericDisplayProps {
     value: number,
@@ -22,13 +22,6 @@ function NumericDisplay({ value, shouldRender }: NumericDisplayProps) {
 
     const isZeroValue = value === 0;
     let encounteredNonZero = false;
-
-    const scaleText = (fontSize: number): number => {
-        const baseScreenWidth = 450;
-        const scale = screenWidth / baseScreenWidth;
-
-        return Math.round(fontSize * scale);
-    };
 
     return (
         <View style={{
