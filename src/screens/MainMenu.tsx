@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../Types';
-import { borderWidth, gridHeight, gridMargin, gridOuterWidth, interfaceOuterHeight } from "../Constants";
+import { borderWidth, gridHeight, gridMargin, gridOuterWidth, interfaceOuterHeight, scaleText } from "../Constants";
 import { NavigationProvider } from '../components/NavigationContext';
 
 type MainMenuProps = {
@@ -104,6 +104,7 @@ const styles = StyleSheet.create({
     },
     titleText: {
         fontFamily: 'MINESWEEPER',
+        fontSize: scaleText(18),
     },
     buttonContainer: {
         flex: 1,
