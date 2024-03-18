@@ -4,9 +4,11 @@ export interface CellStateProps {
     isRevealed: boolean;
     isFlagged: boolean;
     isMine: boolean;
+    isTriggeredMine: boolean;
     isCorner: boolean;
+    isEdge: boolean;
     neighbors: number;
-    adjacentCells: Array<{ row: number, col: number }>;
+    adjacentCells: Array<{row: number, col: number}>;
 }
 export type RootStackParamList = {
     SplashScreen: undefined;

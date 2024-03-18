@@ -1,4 +1,5 @@
 import Svg, { Path, G, Rect } from "react-native-svg";
+import { backgroundColor } from "../Constants";
 
 interface SVGLoaderProps {
     type: string;
@@ -14,6 +15,7 @@ function SVGLoader({ type, name, style }: SVGLoaderProps) {
             case 'symbol':
                 switch (name) {
                     case 'faceSmiling':
+                    case 'faceChilling':
                     case 'faceFrowning':
                         return "0 0 17 17";
                     case 'mine':
@@ -84,7 +86,7 @@ function SVGLoader({ type, name, style }: SVGLoaderProps) {
                                     d="M1,0 h8 v2 h-6 v2 h6 v1 h1 v4 h-1 v1 h-8 v-1 h-1 v-8 h1 v-1"
                                     fill="#008080"
                                 />
-                                <Rect x="3" y="6" width="4" height="2" fill="black" />
+                                <Rect x="3" y="6" width="4" height="2" fill={backgroundColor} />
                             </G>
                         );
                     case '7':
@@ -103,8 +105,8 @@ function SVGLoader({ type, name, style }: SVGLoaderProps) {
                                     d="M1,0 h8  v1  h1  v3 h-1  v2  h1  v3 h-1  v1 h-8 v-1 h-1 v-3  h1 v-2 h-1 v-3  h1 v-1"
                                     fill="#808080"
                                 />
-                                <Rect x="3" y="2" width="4" height="2" fill="white" />
-                                <Rect x="3" y="6" width="4" height="2" fill="white" />
+                                <Rect x="3" y="2" width="4" height="2" fill={backgroundColor} />
+                                <Rect x="3" y="6" width="4" height="2" fill={backgroundColor} />
                             </G>
                         );
                     default:
