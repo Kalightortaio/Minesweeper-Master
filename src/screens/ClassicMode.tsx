@@ -32,7 +32,7 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
         if (practiceMode) {
             return numLives;
         } else {
-            return 0;
+            return 1;
         }
     }
 
@@ -78,6 +78,12 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
         }
     }, [mineLocations, flagCount]);
 
+    useEffect(() => {
+        if (livesLeft === 0) {
+            processLoseCon();
+        }
+    }, [livesLeft]);
+
     const stopTimer = () => {
         pauseTimerRef.current = true;
     };
@@ -112,18 +118,24 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
             } else {
                 if (isFlagMode) {
                     if (!localCells[row][col].isRevealed && !localCells[row][col].isFlagged) {
-                        Vibration.vibrate(100);
+                        Vibration.vibrate(30);
                         revealCell(row, col);
+                    } else if (localCells[row][col].isRevealed && !localCells[row][col].isFlagged) {
+                        Vibration.vibrate(30);
+                        revealAdjacentCells(row, col, localCells);
                     }
                 } else {
                     if (!localCells[row][col].isRevealed && !isFirstPress) {
-                        Vibration.vibrate(100);
+                        Vibration.vibrate(30);
                         flagCell(row, col);
+                    } else if (localCells[row][col].isRevealed && !isFirstPress) {
+                        Vibration.vibrate(30);
+                        revealAdjacentCells(row, col, localCells);
                     }
                 }
             }
         }
-    }, 20, {'leading': true,'trailing': false})
+    }, 10, {'leading': true,'trailing': false})
 
     const revealCell = (row: number, col: number) => {
         if (isFirstPress) {
@@ -148,38 +160,44 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
             setCells(localCells);
         }
         let localCells = [...cells];
-        if (!localCells[row][col].isMine && !localCells[row][col].isRevealed) {
-            revealAdjacentCells(row, col, localCells);
-            setCells(localCells);
-        } else if (localCells[row][col].isRevealed !== true) {
+        if (localCells[row][col].isRevealed) return;
+        if (!localCells[row][col].isMine) {
+            revealRecursiveCells(row, col, localCells);
+        } else if (localCells[row][col].isMine) {
             localCells[row][col].isRevealed = true;
-            setCells(localCells);
-            if (localCells[row][col].isMine) {
-                localCells[row][col].isTriggeredMine = true;
-                if (livesLeft === 0) {
-                    processLoseCon();
-                } else {
-                    setLivesLeft(livesLeft - 1)
-                }
-            }
+            localCells[row][col].isTriggeredMine = true;
+            setLivesLeft(livesLeft - 1);
         }
+        setCells(localCells);
     };
 
-    function revealAdjacentCells(row: number, col: number, localCells: CellStateProps[][]) {
+    function revealRecursiveCells(row: number, col: number, localCells: CellStateProps[][]) {
         if (row < 0 || row >= numRows || col < 0 || col >= numColumns || localCells[row][col].isRevealed) {
             return;
         }
         localCells[row][col].isRevealed = true;
 
         if (localCells[row][col].neighbors === 0 && !localCells[row][col].isMine) {
-            for (let r = Math.max(0, row - 1); r <= Math.min(row + 1, numRows - 1); r++) {
-                for (let c = Math.max(0, col - 1); c <= Math.min(col + 1, numColumns - 1); c++) {
-                    if (!localCells[r][c].isRevealed && !localCells[r][c].isFlagged) {
-                        revealAdjacentCells(r, c, localCells);
-                    }
+            localCells[row][col].adjacentCells.forEach(({ row: adjRow, col: adjCol }) => {
+                if (!localCells[adjRow][adjCol].isRevealed && !localCells[adjRow][adjCol].isFlagged) {
+                    revealRecursiveCells(adjRow, adjCol, localCells);
                 }
-            }
+            })
         }
+    }
+
+    function revealAdjacentCells(row: number, col: number, localCells: CellStateProps[][]) {
+        localCells[row][col].adjacentCells.forEach(({ row: adjRow, col: adjCol }) => {
+            if (localCells[adjRow][adjCol].isRevealed || localCells[adjRow][adjCol].isFlagged) return;
+            if (!localCells[adjRow][adjCol].isMine) {
+                localCells[adjRow][adjCol].isRevealed = true;
+            } else if (localCells[adjRow][adjCol].isMine) {
+                localCells[adjRow][adjCol].isRevealed = true;
+                localCells[adjRow][adjCol].isTriggeredMine = true;
+                setLivesLeft(livesLeft - 1)
+            }
+        });
+        setCells(localCells);
     }
 
     const revealLostGame = (row: number, col: number) => {
@@ -382,6 +400,7 @@ const styles = StyleSheet.create({
         width: '100%',
         maxWidth: gridOuterWidth,
         marginTop: gridMargin,
+        height: interfaceOuterHeight,
         maxHeight: interfaceOuterHeight,
     },
     gridContainer: {
