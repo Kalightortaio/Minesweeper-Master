@@ -20,7 +20,7 @@ function Cell({ onCellPress, lostGame, ...cellStateProps }: CellComponentProps) 
         <TouchableWithoutFeedback 
             onPress={!lostGame ? () => onCellPress(false) : undefined}
             onLongPress={!lostGame ? () => onCellPress(true) : undefined} 
-            delayLongPress={300}>
+            delayLongPress={200}>
             <View style={[styles.cell, cellStateProps.isRevealed ? styles.isRevealed : {}, (cellStateProps.isFlagged || cellStateProps.isMine) ? styles.isSymbol : {}, showTriggeredMine ? styles.isTriggeredMine : {}, showUntriggeredMine ? styles.isLostGame : {}]}>
                 {showCell && (cellStateProps.neighbors != 0) && (
                     <SVGLoader
