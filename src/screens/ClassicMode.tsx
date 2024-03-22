@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, Vibration } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { NavigationProvider } from '../components/NavigationContext';
+import { useTimerControls } from '../components/TimerControlContext';
+import { TimerValueProvider } from '../components/TimerValueContext';
 import { RootStackParamList } from '../Types';
 import { CellStateProps } from '../Types';
 import { borderWidth, cellSize, gridMargin, gridOuterWidth, interfaceOuterHeight, numColumns, numLives, numMines, numRows, practiceMode } from '../Constants';
@@ -11,22 +13,20 @@ import Cell from '../components/Cell';
 import { throttle } from 'lodash';
 
 type ClassicModeProps = {
-    navigation: StackNavigationProp<RootStackParamList, 'ClassicMode'>;
+    navigation: StackNavigationProp<RootStackParamList, 'Classic Mode'>;
 }
 
 export default function ClassicMode({ navigation }:ClassicModeProps) {
     const [isNewGame, setIsNewGame] = useState(true);
     const [cells, setCells] = useState<CellStateProps[][]>(initializeCells());
     const [mineLocations, setMineLocations] = useState<{row:number,col:number}[]>([]);
-    const [isFirstPress, setIsFirstPress] = useState(true);
-    const [timer, setTimer] = useState(0);
-    const pauseTimerRef = useRef(false);
     const [isPanOrPinchActive, setPanOrPinchActive] = useState(false);
     const [flagCount, setFlagCount] = useState(0);
     const [isFlagMode, setIsFlagMode] = useState(false);
     const [isLostGame, setIsLostGame] = useState(false);
     const [livesLeft, setLivesLeft] = useState(initializeLives());
     const [faceState, setFaceState] = useState<"faceSmiling"|"faceChilling"|"faceFrowning">("faceSmiling");
+    const { startTimer, pauseTimer, resetTimer, isTimerActive } = useTimerControls();
 
     function initializeLives(): number {
         if (practiceMode) {
@@ -38,8 +38,7 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
 
     function onResetGame() {
         setIsNewGame(true);
-        setIsFirstPress(true);
-        setTimer(0);
+        resetTimer();
         setFlagCount(0);
         setIsLostGame(false);
         setFaceState("faceSmiling");
@@ -58,20 +57,7 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
     }, [isNewGame]);
 
     useEffect(() => {
-        if (isFirstPress) {
-            pauseTimerRef.current = false;
-        } else {
-            const intervalId = setInterval(() => {
-                if (!pauseTimerRef.current) {
-                    setTimer(t => t + 1);
-                }
-            }, 1000);
-            return () => clearInterval(intervalId);
-        }
-    }, [isFirstPress]);
-
-    useEffect(() => {
-        if (!isFirstPress) {
+        if (isTimerActive) {
             if (mineLocations.length === 0 && flagCount === numMines) {
                 processWinCon();
             }
@@ -84,12 +70,8 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
         }
     }, [livesLeft]);
 
-    const stopTimer = () => {
-        pauseTimerRef.current = true;
-    };
-
     const processLoseCon = () => {
-        stopTimer();
+        pauseTimer();
         setFaceState("faceFrowning");
         setIsLostGame(true);
         mineLocations.forEach(({ row, col }) => {
@@ -98,7 +80,7 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
     }
 
     const processWinCon = () => {
-        stopTimer();
+        pauseTimer();
         setFaceState("faceChilling");
     }
 
@@ -107,7 +89,7 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
             let localCells = [...cells];
             if (!long) {
                 if (isFlagMode) {
-                    if (!localCells[row][col].isRevealed && !isFirstPress) {
+                    if (!localCells[row][col].isRevealed && isTimerActive) {
                         flagCell(row, col);
                     }
                 } else {
@@ -125,10 +107,10 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
                         revealAdjacentCells(row, col, localCells);
                     }
                 } else {
-                    if (!localCells[row][col].isRevealed && !isFirstPress) {
+                    if (!localCells[row][col].isRevealed && isTimerActive) {
                         Vibration.vibrate(30);
                         flagCell(row, col);
-                    } else if (localCells[row][col].isRevealed && !isFirstPress) {
+                    } else if (localCells[row][col].isRevealed && isTimerActive) {
                         Vibration.vibrate(30);
                         revealAdjacentCells(row, col, localCells);
                     }
@@ -138,7 +120,7 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
     }, 10, {'leading': true,'trailing': false})
 
     const revealCell = (row: number, col: number) => {
-        if (isFirstPress) {
+        if (!isTimerActive) {
             let localCells = [...cells];
             for (let r = row - 2; r <= row + 2; r++) {
                 for (let c = col - 2; c <= col + 2; c++) {
@@ -156,7 +138,7 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
                     }
                 }
             }
-            setIsFirstPress(false);
+            startTimer();
             setCells(localCells);
         }
         let localCells = [...cells];
@@ -338,7 +320,7 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
         gridLines.push(
             <View
                 key={`horizontal-line-${i}`}
-                style={[styles.gridLineX, { top: i * cellSize }]}
+                style={[styles.gridLineX, { top: (i * cellSize) }]}
             />
         );
     }
@@ -346,7 +328,7 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
         gridLines.push(
             <View
                 key={`vertical-line-${j}`}
-                style={[styles.gridLineY, { left: j * cellSize }]}
+                style={[styles.gridLineY, { left: (j * cellSize) }]}
             />
         );
     }
@@ -355,7 +337,9 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
         <NavigationProvider navigation={navigation}>
             <View style={styles.gameContainer}>
                 <View style={styles.interfaceContainer}>
-                    <Interface timer={timer} flagCount={flagCount} isFlagMode={isFlagMode} faceState={faceState} onResetGame={onResetGame} onToggleFlagMode={onToggleFlagMode} />
+                    <TimerValueProvider>
+                        <Interface flagCount={flagCount} isFlagMode={isFlagMode} faceState={faceState} onResetGame={onResetGame} onToggleFlagMode={onToggleFlagMode} />
+                    </TimerValueProvider>
                 </View>
                 <View style={styles.gridContainer}>
                     <Zoomable style={{ overflow: 'hidden', zIndex: 0 }} setPanOrPinchActive={setPanOrPinchActive}>
