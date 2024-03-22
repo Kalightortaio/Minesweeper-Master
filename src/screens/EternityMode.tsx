@@ -4,17 +4,17 @@ import { RootStackParamList } from '../Types';
 import { borderWidth, gridHeight, gridMargin, gridOuterWidth, interfaceOuterHeight, scaleText } from "../Constants";
 import { NavigationProvider } from '../components/NavigationContext';
 
-type SettingsProps = {
-    navigation: StackNavigationProp<RootStackParamList, 'Settings'>;
+type EternityModeProps = {
+    navigation: StackNavigationProp<RootStackParamList, 'Eternity Mode'>;
 };
 
-export default function Settings({ navigation }: SettingsProps) {
+export default function EternityMode({ navigation }: EternityModeProps) {
     return (
         <NavigationProvider navigation={navigation}>
-            <View style={styles.SettingsContainer}>
+            <View style={styles.EternityModeContainer}>
                 <View style={styles.interfaceContainer}>
                     <Text style={styles.titleText}>
-                        Settings
+                        Title Text
                     </Text>
                 </View>
                 <View style={styles.gridContainer}>
@@ -26,7 +26,7 @@ export default function Settings({ navigation }: SettingsProps) {
 }
 
 const styles = StyleSheet.create({
-    SettingsContainer: {
+    EternityModeContainer: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',

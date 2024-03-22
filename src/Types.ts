@@ -11,10 +11,14 @@ export interface CellStateProps {
     adjacentCells: Array<{row: number, col: number}>;
 }
 export type RootStackParamList = {
-    SplashScreen: undefined;
     MainMenu: undefined;
-    ClassicMode: undefined;
-    HighScores: undefined;
-    ChallengeMode: undefined;
+    QuickPlay: {
+        gameMode: 'Classic Mode'|'Eternity Mode'|'Master Mode';
+    }
+    'Classic Mode': undefined;
+    'Eternity Mode': undefined;
+    'Master Mode': undefined;
+    Achievements: undefined;
+    'High Scores': undefined;
     Settings: undefined;
 };

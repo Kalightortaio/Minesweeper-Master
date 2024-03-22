@@ -20,31 +20,37 @@ export default function MainMenu({ navigation }: MainMenuProps) {
                 <View style={styles.gridContainer}>
                     <View style={styles.buttonContainer}>
                         <TouchableOpacity
-                            onPress={() => navigation.navigate('ClassicMode')}
+                            onPress={() => navigation.navigate('QuickPlay', {
+                                gameMode: "Classic Mode",
+                            })}
                             style={styles.menuButtons}
                         >
                             <Text style={styles.titleText}>Classic Mode</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            onPress={() => navigation.navigate('ChallengeMode')}
+                            onPress={() => navigation.navigate('QuickPlay', {
+                                gameMode: "Eternity Mode",
+                            })}
                             style={styles.menuButtons}
                         >
                             <Text style={styles.titleText}>Eternity Mode</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            onPress={() => navigation.navigate('ChallengeMode')}
+                            onPress={() => navigation.navigate('QuickPlay', {
+                                gameMode: "Master Mode",
+                            })}
                             style={styles.menuButtons}
                         >
                             <Text style={styles.titleText}>Master Mode</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            onPress={() => navigation.navigate('HighScores')}
+                            onPress={() => navigation.navigate('Achievements')}
                             style={styles.menuButtons}
                         >
                             <Text style={styles.titleText}>Achievements</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            onPress={() => navigation.navigate('HighScores')}
+                            onPress={() => navigation.navigate('High Scores')}
                             style={styles.menuButtons}
                         >
                             <Text style={styles.titleText}>High Scores</Text>

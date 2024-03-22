@@ -4,17 +4,17 @@ import { RootStackParamList } from '../Types';
 import { borderWidth, gridHeight, gridMargin, gridOuterWidth, interfaceOuterHeight, scaleText } from "../Constants";
 import { NavigationProvider } from '../components/NavigationContext';
 
-type SettingsProps = {
-    navigation: StackNavigationProp<RootStackParamList, 'Settings'>;
+type AchievementsProps = {
+    navigation: StackNavigationProp<RootStackParamList, 'Achievements'>;
 };
 
-export default function Settings({ navigation }: SettingsProps) {
+export default function Achievements({ navigation }: AchievementsProps) {
     return (
         <NavigationProvider navigation={navigation}>
-            <View style={styles.SettingsContainer}>
+            <View style={styles.AchievementsContainer}>
                 <View style={styles.interfaceContainer}>
                     <Text style={styles.titleText}>
-                        Settings
+                        Achievements
                     </Text>
                 </View>
                 <View style={styles.gridContainer}>
@@ -26,7 +26,7 @@ export default function Settings({ navigation }: SettingsProps) {
 }
 
 const styles = StyleSheet.create({
-    SettingsContainer: {
+    AchievementsContainer: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',

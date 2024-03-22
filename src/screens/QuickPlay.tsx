@@ -3,22 +3,30 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../Types';
 import { borderWidth, gridHeight, gridMargin, gridOuterWidth, interfaceOuterHeight, scaleText } from "../Constants";
 import { NavigationProvider } from '../components/NavigationContext';
+import { RouteProp } from "@react-navigation/native";
 
-type SettingsProps = {
-    navigation: StackNavigationProp<RootStackParamList, 'Settings'>;
+type QuickPlayProps = {
+    navigation: StackNavigationProp<RootStackParamList, 'QuickPlay'>;
+    route: RouteProp<RootStackParamList, 'QuickPlay'>;
 };
 
-export default function Settings({ navigation }: SettingsProps) {
+export default function QuickPlay({ route, navigation }: QuickPlayProps) {
+    const { gameMode } = route.params;
     return (
         <NavigationProvider navigation={navigation}>
-            <View style={styles.SettingsContainer}>
+            <View style={styles.quickplayContainer}>
                 <View style={styles.interfaceContainer}>
                     <Text style={styles.titleText}>
-                        Settings
+                        Game Options
                     </Text>
                 </View>
                 <View style={styles.gridContainer}>
-                    
+                    <TouchableOpacity
+                        onPress={() => navigation.navigate(gameMode)}
+                        style={styles.menuButtons}
+                    >
+                        <Text style={styles.titleText}>{gameMode}</Text>
+                    </TouchableOpacity>
                 </View>
             </View>
         </NavigationProvider>
@@ -26,7 +34,7 @@ export default function Settings({ navigation }: SettingsProps) {
 }
 
 const styles = StyleSheet.create({
-    SettingsContainer: {
+    quickplayContainer: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
@@ -68,5 +76,13 @@ const styles = StyleSheet.create({
     titleText: {
         fontFamily: 'MINESWEEPER',
         fontSize: scaleText(18),
+    },
+    menuButtons: {
+        padding: 10,
+        borderTopColor: '#fff',
+        borderLeftColor: '#fff',
+        borderBottomColor: '#7D7D7D',
+        borderRightColor: '#7D7D7D',
+        borderWidth: borderWidth,
     },
 })
