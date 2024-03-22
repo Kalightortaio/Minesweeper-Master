@@ -1,5 +1,5 @@
 import { Text, View } from "react-native";
-import { interfaceComponentHeight, interfacePadding, scaleText, screenWidth } from "../Constants";
+import { interfaceComponentHeight, interfacePadding, scaleText } from "../Constants";
 
 interface NumericDisplayProps {
     value: number,

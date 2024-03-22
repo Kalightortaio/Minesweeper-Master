@@ -1,13 +1,13 @@
 import { View } from 'react-native';
-import NumericDisplay from './NumericDisplay';
 import { FontsLoadedContext, gridInnerWidth, interfacePadding, numMines } from '../Constants';
+import NumericDisplay from './NumericDisplay';
 import ButtonReset from './ButtonReset';
 import ButtonSettings from './ButtonSettings';
 import ButtonFlag from './ButtonFlag';
+import { useTimerValue } from './TimerValueContext';
 import { useContext } from 'react';
 
 interface InterfaceProps {
-    timer: number,
     flagCount: number,
     isFlagMode: boolean,
     faceState: string,
@@ -15,8 +15,9 @@ interface InterfaceProps {
     onResetGame: () => void,
 }
 
-function Interface({ timer, flagCount, isFlagMode, faceState, onResetGame, onToggleFlagMode }: InterfaceProps) {
+function Interface({ flagCount, isFlagMode, faceState, onResetGame, onToggleFlagMode }: InterfaceProps) {
     const fontsLoaded = useContext(FontsLoadedContext);
+    const { timer } = useTimerValue();
 
     let flagsLeft = numMines - flagCount;
     if (flagsLeft < 0) flagsLeft = 0;
