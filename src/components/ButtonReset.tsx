@@ -1,5 +1,6 @@
-import { TouchableWithoutFeedback, View, Text } from "react-native";
+import { TouchableWithoutFeedback, View } from "react-native";
 import { borderWidth, interfaceComponentHeight } from "../Constants";
+import { useSounds } from "./SoundContext";
 import SVGLoader from "./SVGLoader";
 
 interface ButtonResetProps {
@@ -8,9 +9,13 @@ interface ButtonResetProps {
 }
 
 function ButtonReset({ onResetGame, faceState }: ButtonResetProps) {
+    const { playSound } = useSounds();
 
     return (
-        <TouchableWithoutFeedback onPress={onResetGame}>
+        <TouchableWithoutFeedback onPress={() => {
+            playSound('click');
+            onResetGame();
+        }}>
             <View style={{
                 height: interfaceComponentHeight,
                 width: interfaceComponentHeight,

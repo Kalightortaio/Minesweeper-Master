@@ -1,5 +1,6 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { NavigationProvider } from '../components/NavigationContext';
+import { useSounds } from "../components/SoundContext";
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from '../Types';
@@ -11,7 +12,9 @@ type QuickPlayProps = {
 };
 
 export default function QuickPlay({ route, navigation }: QuickPlayProps) {
+    const { playSound } = useSounds();
     const { gameMode } = route.params;
+    
     return (
         <NavigationProvider navigation={navigation}>
             <View style={styles.quickplayContainer}>
@@ -25,7 +28,10 @@ export default function QuickPlay({ route, navigation }: QuickPlayProps) {
                         Test123
                     </Text>
                     <TouchableOpacity
-                        onPress={() => navigation.navigate(gameMode)}
+                        onPress={() => {
+                            playSound('click');
+                            navigation.navigate(gameMode);
+                        }}
                         style={styles.menuButtons}
                     >
                         <Text style={styles.titleText}>{gameMode}</Text>
@@ -61,7 +67,7 @@ const styles = StyleSheet.create({
         maxWidth: gridOuterWidth,
         marginTop: gridMargin,
         height: interfaceOuterHeight,
-        maxHeight: interfaceOuterHeight,
+        maxHeight: '7%',
     },
     gridContainer: {
         justifyContent: 'center',
@@ -75,6 +81,7 @@ const styles = StyleSheet.create({
         width: '100%',
         maxWidth: gridOuterWidth,
         marginVertical: gridMargin,
+        maxHeight: '88%',
     },
     titleText: {
         fontFamily: 'MINESWEEPER',

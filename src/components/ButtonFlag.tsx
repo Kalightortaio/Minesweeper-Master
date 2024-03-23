@@ -1,5 +1,6 @@
 import { TouchableWithoutFeedback, View } from "react-native";
 import { borderWidth, interfaceComponentHeight } from "../Constants";
+import { useSounds } from "./SoundContext";
 import SVGLoader from "./SVGLoader";
 
 interface ButtonFlagProps {
@@ -8,9 +9,13 @@ interface ButtonFlagProps {
 }
 
 function ButtonFlag({ isFlagMode, onToggleFlagMode }: ButtonFlagProps) {
+    const { playSound } = useSounds();
 
     return (
-        <TouchableWithoutFeedback onPress={onToggleFlagMode}>
+        <TouchableWithoutFeedback onPress={() => {
+            playSound('click');
+            onToggleFlagMode();
+        }}>
             <View style={{
                 height: interfaceComponentHeight,
                 width: interfaceComponentHeight,

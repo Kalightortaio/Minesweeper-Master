@@ -3,12 +3,15 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../Types';
 import { borderWidth, gridHeight, gridMargin, gridOuterWidth, interfaceOuterHeight, scaleText } from "../Constants";
 import { NavigationProvider } from '../components/NavigationContext';
+import { useSounds } from "../components/SoundContext";
 
 type MainMenuProps = {
     navigation: StackNavigationProp<RootStackParamList, 'MainMenu'>;
 };
 
 export default function MainMenu({ navigation }: MainMenuProps) {
+    const { playSound } = useSounds();
+
     return (
         <NavigationProvider navigation={navigation}>
             <View style={styles.menuContainer}>
@@ -20,43 +23,55 @@ export default function MainMenu({ navigation }: MainMenuProps) {
                 <View style={styles.gridContainer}>
                     <View style={styles.buttonContainer}>
                         <TouchableOpacity
-                            onPress={() => navigation.navigate('QuickPlay', {
-                                gameMode: "Classic Mode",
-                            })}
+                            onPress={() => {
+                                playSound('click');
+                                navigation.navigate('QuickPlay', {gameMode: "Classic Mode"});
+                            }}
                             style={styles.menuButtons}
                         >
                             <Text style={styles.titleText}>Classic Mode</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            onPress={() => navigation.navigate('QuickPlay', {
-                                gameMode: "Eternity Mode",
-                            })}
+                            onPress={() => {
+                                playSound('click');
+                                navigation.navigate('QuickPlay', {gameMode: "Eternity Mode"});
+                            }}
                             style={styles.menuButtons}
                         >
                             <Text style={styles.titleText}>Eternity Mode</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            onPress={() => navigation.navigate('QuickPlay', {
-                                gameMode: "Master Mode",
-                            })}
+                            onPress={() => {
+                                playSound('click');
+                                navigation.navigate('QuickPlay', {gameMode: "Master Mode"});
+                            }}
                             style={styles.menuButtons}
                         >
                             <Text style={styles.titleText}>Master Mode</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            onPress={() => navigation.navigate('Achievements')}
+                            onPress={() => {
+                                playSound('click');
+                                navigation.navigate('Achievements');
+                            }}
                             style={styles.menuButtons}
                         >
                             <Text style={styles.titleText}>Achievements</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            onPress={() => navigation.navigate('High Scores')}
+                            onPress={() => {
+                                playSound('click');
+                                navigation.navigate('High Scores');
+                            }}
                             style={styles.menuButtons}
                         >
                             <Text style={styles.titleText}>High Scores</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            onPress={() => navigation.navigate('Settings')}
+                            onPress={() => {
+                                playSound('click');
+                                navigation.navigate('Settings');
+                            }}
                             style={styles.menuButtons}
                         >
                             <Text style={styles.titleText}>Settings</Text>
@@ -93,7 +108,7 @@ const styles = StyleSheet.create({
         maxWidth: gridOuterWidth,
         marginTop: gridMargin,
         height: interfaceOuterHeight,
-        maxHeight: interfaceOuterHeight,
+        maxHeight: '7%',
     },
     gridContainer: {
         justifyContent: 'center',
@@ -107,6 +122,7 @@ const styles = StyleSheet.create({
         width: '100%',
         maxWidth: gridOuterWidth,
         marginVertical: gridMargin,
+        maxHeight: '88%',
     },
     titleText: {
         fontFamily: 'MINESWEEPER',

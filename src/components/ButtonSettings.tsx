@@ -1,13 +1,18 @@
-import { TouchableWithoutFeedback, View, Text } from "react-native";
+import { TouchableWithoutFeedback, View} from "react-native";
 import { borderWidth, interfaceComponentHeight } from "../Constants";
 import { useNavigationContext } from './NavigationContext';
+import { useSounds } from "./SoundContext";
 import SVGLoader from "./SVGLoader";
 
 function ButtonSettings() {
     const navigation = useNavigationContext();
+    const { playSound } = useSounds();
 
     return (
-        <TouchableWithoutFeedback onPress={() => navigation.navigate('Settings')}>
+        <TouchableWithoutFeedback onPress={() => {
+            playSound('click');
+            navigation.navigate('Settings');
+        }}>
             <View style={{
                 height: interfaceComponentHeight,
                 width: interfaceComponentHeight,
