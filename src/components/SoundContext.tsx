@@ -56,7 +56,6 @@ export const SoundProvider: React.FC<SoundProviderProps> = ({ children }) => {
         }
         const sound = sounds[soundKey]
         if (sound) {
-            console.log(soundKey, sound["_loaded"]);
             await sound.replayAsync();
         }
     };
