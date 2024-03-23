@@ -1,9 +1,9 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { NavigationProvider } from '../components/NavigationContext';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from '../Types';
 import { borderWidth, gridHeight, gridMargin, gridOuterWidth, interfaceOuterHeight, scaleText } from "../Constants";
-import { NavigationProvider } from '../components/NavigationContext';
-import { RouteProp } from "@react-navigation/native";
 
 type QuickPlayProps = {
     navigation: StackNavigationProp<RootStackParamList, 'QuickPlay'>;
@@ -21,6 +21,9 @@ export default function QuickPlay({ route, navigation }: QuickPlayProps) {
                     </Text>
                 </View>
                 <View style={styles.gridContainer}>
+                    <Text style={styles.optionText}>
+                        Test123
+                    </Text>
                     <TouchableOpacity
                         onPress={() => navigation.navigate(gameMode)}
                         style={styles.menuButtons}
@@ -75,6 +78,10 @@ const styles = StyleSheet.create({
     },
     titleText: {
         fontFamily: 'MINESWEEPER',
+        fontSize: scaleText(18),
+    },
+    optionText: {
+        fontFamily: 'Tahoma',
         fontSize: scaleText(18),
     },
     menuButtons: {
