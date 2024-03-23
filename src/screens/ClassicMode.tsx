@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Vibration } from 'react-native';
+import { View, StyleSheet, Vibration, BackHandler } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { NavigationProvider } from '../components/NavigationContext';
 import { useTimerControls } from '../components/TimerControlContext';
@@ -11,12 +11,14 @@ import Zoomable from '../components/Zoomable';
 import Interface from '../components/Interface';
 import Cell from '../components/Cell';
 import { throttle } from 'lodash';
+import { useRoute } from '@react-navigation/native';
 
 type ClassicModeProps = {
     navigation: StackNavigationProp<RootStackParamList, 'Classic Mode'>;
 }
 
 export default function ClassicMode({ navigation }:ClassicModeProps) {
+    const route = useRoute();
     const [isNewGame, setIsNewGame] = useState(true);
     const [cells, setCells] = useState<CellStateProps[][]>(initializeCells());
     const [mineLocations, setMineLocations] = useState<{row:number,col:number}[]>([]);
@@ -49,6 +51,26 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
         setMineLocations([]);
         setCells(initializeCells());
     }
+
+    useEffect(() => {
+        const state = navigation.getState();
+        const currentIndex = state.routes.findIndex(r => r.key === route.key);
+        if (currentIndex > 0) {
+            if (state.routes[currentIndex - 1].name === 'QuickPlay') {
+                onResetGame();
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        const backAction = () => {
+            playSound('click');
+            navigation.navigate('MainMenu');
+            return true;
+        };
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
+        return () => backHandler.remove();
+    }, [navigation]);
 
     useEffect(() => {
         if (isNewGame) {
