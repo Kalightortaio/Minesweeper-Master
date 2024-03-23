@@ -1,11 +1,10 @@
 import { View } from 'react-native';
-import { FontsLoadedContext, gridInnerWidth, interfacePadding, numMines } from '../Constants';
+import { gridInnerWidth, interfacePadding, numMines } from '../Constants';
 import NumericDisplay from './NumericDisplay';
 import ButtonReset from './ButtonReset';
 import ButtonSettings from './ButtonSettings';
 import ButtonFlag from './ButtonFlag';
 import { useTimerValue } from './TimerValueContext';
-import { useContext } from 'react';
 
 interface InterfaceProps {
     flagCount: number,
@@ -16,7 +15,6 @@ interface InterfaceProps {
 }
 
 function Interface({ flagCount, isFlagMode, faceState, onResetGame, onToggleFlagMode }: InterfaceProps) {
-    const fontsLoaded = useContext(FontsLoadedContext);
     const { timer } = useTimerValue();
 
     let flagsLeft = numMines - flagCount;
@@ -28,7 +26,7 @@ function Interface({ flagCount, isFlagMode, faceState, onResetGame, onToggleFlag
         justifyContent: 'space-between',
         padding: interfacePadding,
     }}>
-        <NumericDisplay value={flagsLeft} shouldRender={fontsLoaded}/>
+        <NumericDisplay value={flagsLeft}/>
         <View style={{
             flexDirection: 'row',
             alignItems: 'center',
@@ -39,7 +37,7 @@ function Interface({ flagCount, isFlagMode, faceState, onResetGame, onToggleFlag
             <ButtonReset onResetGame={onResetGame} faceState={faceState}/>
             <ButtonFlag onToggleFlagMode={onToggleFlagMode} isFlagMode={isFlagMode}/>
         </View>
-        <NumericDisplay value={timer} shouldRender={fontsLoaded}/>
+        <NumericDisplay value={timer}/>
     </View>;
 }
 

@@ -3,10 +3,9 @@ import { interfaceComponentHeight, interfacePadding, scaleText } from "../Consta
 
 interface NumericDisplayProps {
     value: number,
-    shouldRender: boolean,
 }
 
-function NumericDisplay({ value, shouldRender }: NumericDisplayProps) {
+function NumericDisplay({ value }: NumericDisplayProps) {
     const formatNumber = (num: number): string => {
         return Math.max(0, Math.min(999, num)).toString().padStart(3, '0');
     };
@@ -37,9 +36,10 @@ function NumericDisplay({ value, shouldRender }: NumericDisplayProps) {
                 alignItems: 'flex-end',
                 flexDirection: 'row',
             }}>
-                {shouldRender && digits.map((digit, index) => {
-                    if (digit !== '0') encounteredNonZero = true;
-
+                {digits.map((digit, index) => {
+                    if (digit !== '0') {
+                        encounteredNonZero = true;
+                    }
                     return (
                         <Text key={index} style={{
                             fontFamily: 'DSEG',
@@ -51,7 +51,7 @@ function NumericDisplay({ value, shouldRender }: NumericDisplayProps) {
                         </Text>
                     );
                 })}
-                {shouldRender && <Text numberOfLines={1} style={{
+                <Text numberOfLines={1} style={{
                     position: 'absolute',
                     fontFamily: 'DSEG',
                     color: '#FF0000',
@@ -63,7 +63,7 @@ function NumericDisplay({ value, shouldRender }: NumericDisplayProps) {
                 }}
                 >
                     888
-                </Text>}
+                </Text>
             </View>
         </View>
     );

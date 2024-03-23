@@ -20,7 +20,6 @@ export const interfacePadding = (0.25 * cellSize);
 export const interfaceComponentHeight = (1.5 * cellSize);
 export const boardWidth = numColumns * cellSize;
 export const boardHeight = numRows * cellSize;
-export const FontsLoadedContext = React.createContext(false);
 export const backgroundColor: string = "#BDBDBD";
 
 export const scaleText = (fontSize: number): number => {
