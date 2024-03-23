@@ -24,6 +24,7 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
     const [flagCount, setFlagCount] = useState(0);
     const [isFlagMode, setIsFlagMode] = useState(false);
     const [isLostGame, setIsLostGame] = useState(false);
+    const [isWonGame, setIsWonGame] = useState(false);
     const [livesLeft, setLivesLeft] = useState(initializeLives());
     const [faceState, setFaceState] = useState<"faceSmiling"|"faceChilling"|"faceFrowning">("faceSmiling");
     const { startTimer, pauseTimer, resetTimer, isTimerActive } = useTimerControls();
@@ -42,6 +43,7 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
         resetTimer();
         setFlagCount(0);
         setIsLostGame(false);
+        setIsWonGame(false);
         setFaceState("faceSmiling");
         setLivesLeft(initializeLives());
         setMineLocations([]);
@@ -83,36 +85,38 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
     const processWinCon = () => {
         pauseTimer();
         setFaceState("faceChilling");
+        setIsWonGame(true);
     }
 
     const onCellPress = throttle((row: number, col: number, long: boolean ) => {
         if (!isPanOrPinchActive) {
             playSound('click');
             let localCells = [...cells];
+            const cell = localCells[row][col];
             if (!long) {
                 if (isFlagMode) {
-                    if (!localCells[row][col].isRevealed && isTimerActive) {
+                    if (!cell.isRevealed && isTimerActive) {
                         flagCell(row, col);
                     }
                 } else {
-                    if (!localCells[row][col].isRevealed && !localCells[row][col].isFlagged) {
+                    if (!cell.isRevealed && !cell.isFlagged) {
                         revealCell(row, col);
                     }
                 }
             } else {
                 if (isFlagMode) {
-                    if (!localCells[row][col].isRevealed && !localCells[row][col].isFlagged) {
+                    if (!cell.isRevealed && !cell.isFlagged) {
                         Vibration.vibrate(30);
                         revealCell(row, col);
-                    } else if (localCells[row][col].isRevealed && localCells[row][col].neighbors !== 0 && !localCells[row][col].isFlagged) {
+                    } else if (cell.isRevealed && cell.neighbors !== 0 && !cell.isFlagged) {
                         Vibration.vibrate(30);
                         revealAdjacentCells(row, col, localCells);
                     }
                 } else {
-                    if (!localCells[row][col].isRevealed && isTimerActive) {
+                    if (!cell.isRevealed && isTimerActive) {
                         Vibration.vibrate(30);
                         flagCell(row, col);
-                    } else if (localCells[row][col].isRevealed && localCells[row][col].neighbors !== 0 && isTimerActive) {
+                    } else if (cell.isRevealed && cell.neighbors !== 0 && isTimerActive) {
                         Vibration.vibrate(30);
                         revealAdjacentCells(row, col, localCells);
                     }
@@ -129,9 +133,10 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
                     if (r >= 0 && r < numRows && c >= 0 && c < numColumns) {
                         const isInImmediateRadius = r >= row - 1 && r <= row + 1 && c >= col - 1 && c <= col + 1;
                         const shouldRemoveMine = isInImmediateRadius || (!isInImmediateRadius && Math.random() < 0.3);
-                        if (localCells[r][c].isMine && shouldRemoveMine) {
+                        const cell = localCells[r][c];
+                        if (cell.isMine && shouldRemoveMine) {
                             const { newRow, newCol } = findNewMineLocation(localCells);
-                            localCells[r][c].isMine = false;
+                            cell.isMine = false;
                             updateMineLocation(r, c, "remove");
                             localCells[newRow][newCol].isMine = true;
                             updateMineLocation(newRow, newCol, "add");
@@ -144,26 +149,29 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
             setCells(localCells);
         }
         let localCells = [...cells];
-        if (localCells[row][col].isRevealed) return;
-        if (!localCells[row][col].isMine) {
+        const cell = localCells[row][col];
+        if (cell.isRevealed) return;
+        if (!cell.isMine) {
             revealRecursiveCells(row, col, localCells);
-        } else if (localCells[row][col].isMine) {
-            localCells[row][col].isRevealed = true;
-            localCells[row][col].isTriggeredMine = true;
+        } else if (cell.isMine) {
+            cell.isRevealed = true;
+            cell.isTriggeredMine = true;
             setLivesLeft(livesLeft - 1);
         }
         setCells(localCells);
     };
 
     function revealRecursiveCells(row: number, col: number, localCells: CellStateProps[][]) {
-        if (row < 0 || row >= numRows || col < 0 || col >= numColumns || localCells[row][col].isRevealed) {
+        const cell = localCells[row][col]
+        if (row < 0 || row >= numRows || col < 0 || col >= numColumns || cell.isRevealed) {
             return;
         }
-        localCells[row][col].isRevealed = true;
+        cell.isRevealed = true;
 
-        if (localCells[row][col].neighbors === 0 && !localCells[row][col].isMine) {
-            localCells[row][col].adjacentCells.forEach(({ row: adjRow, col: adjCol }) => {
-                if (!localCells[adjRow][adjCol].isRevealed && !localCells[adjRow][adjCol].isFlagged) {
+        if (cell.neighbors === 0 && !cell.isMine) {
+            cell.adjacentCells.forEach(({ row: adjRow, col: adjCol }) => {
+                const adjCell = localCells[adjRow][adjCol];
+                if (!adjCell.isRevealed && !adjCell.isFlagged) {
                     revealRecursiveCells(adjRow, adjCol, localCells);
                 }
             })
@@ -172,12 +180,13 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
 
     function revealAdjacentCells(row: number, col: number, localCells: CellStateProps[][]) {
         localCells[row][col].adjacentCells.forEach(({ row: adjRow, col: adjCol }) => {
-            if (localCells[adjRow][adjCol].isRevealed || localCells[adjRow][adjCol].isFlagged) return;
-            if (!localCells[adjRow][adjCol].isMine) {
-                localCells[adjRow][adjCol].isRevealed = true;
-            } else if (localCells[adjRow][adjCol].isMine) {
-                localCells[adjRow][adjCol].isRevealed = true;
-                localCells[adjRow][adjCol].isTriggeredMine = true;
+            const adjCell = localCells[adjRow][adjCol];
+            if (adjCell.isRevealed || adjCell.isFlagged) return;
+            if (!adjCell.isMine) {
+                adjCell.isRevealed = true;
+            } else if (adjCell.isMine) {
+                adjCell.isRevealed = true;
+                adjCell.isTriggeredMine = true;
                 setLivesLeft(livesLeft - 1)
             }
         });
@@ -186,22 +195,24 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
 
     const revealLostGame = (row: number, col: number) => {
         let localCells = [...cells];
-        if (!localCells[row][col].isMine) {
+        const cell = localCells[row][col];
+        if (!cell.isMine) {
             console.error("Invalid Mine Location in Array: " + row + "," + col + ".")
-        } else if (!localCells[row][col].isRevealed) {
-            localCells[row][col].isRevealed = true;
+        } else if (!cell.isRevealed) {
+            cell.isRevealed = true;
             setCells(localCells);
         }
     };
 
     const flagCell = (row: number, col: number) => {
         let localCells = [...cells];
-        const newFlagState = !localCells[row][col].isFlagged
-        localCells[row][col].isFlagged = newFlagState;
+        const cell = localCells[row][col];
+        const newFlagState = !cell.isFlagged
+        cell.isFlagged = newFlagState;
         updateFlagCount(newFlagState);
-        if (localCells[row][col].isFlagged && localCells[row][col].isMine) {
+        if (cell.isFlagged && cell.isMine) {
             updateMineLocation(row, col, "remove");
-        } else if (!localCells[row][col].isFlagged && localCells[row][col].isMine) {
+        } else if (!cell.isFlagged && cell.isMine) {
             updateMineLocation(row, col, "add");
         }
         setCells(localCells);
@@ -243,7 +254,7 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
                     (cell.isCorner && cell.neighbors === 3) ||
                     (cell.isEdge && cell.neighbors === 5))) {
                     const { newRow, newCol } = findNewMineLocation(localCells);
-                    localCells[row][col].isMine = false;
+                    cell.isMine = false;
                     updateMineLocation(row, col, "remove");
                     localCells[newRow][newCol].isMine = true;
                     updateMineLocation(newRow, newCol, "add");
@@ -344,7 +355,7 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
                     </TimerValueProvider>
                 </View>
                 <View style={styles.gridContainer}>
-                    <Zoomable style={{ overflow: 'hidden', zIndex: 0 }} setPanOrPinchActive={setPanOrPinchActive}>
+                    <Zoomable style={{ overflow: 'hidden', zIndex: 0, elevation: 0 }} setPanOrPinchActive={setPanOrPinchActive}>
                         {gridLines}
                         {cells.map((row, rowIndex) => (
                             <View key={`row-${rowIndex}`} style={styles.gridRow}>
@@ -353,6 +364,7 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
                                         key={`${rowIndex}-${colIndex}`}
                                         onCellPress={(isLongPress) => onCellPress(rowIndex, colIndex, isLongPress)}
                                         lostGame = {isLostGame}
+                                        wonGame = {isWonGame}
                                         {...cellState}
                                     />
                                 ))}
@@ -387,7 +399,7 @@ const styles = StyleSheet.create({
         maxWidth: gridOuterWidth,
         marginTop: gridMargin,
         height: interfaceOuterHeight,
-        maxHeight: interfaceOuterHeight,
+        maxHeight: '7%',
     },
     gridContainer: {
         justifyContent: 'center',
@@ -400,6 +412,7 @@ const styles = StyleSheet.create({
         width: '100%',
         maxWidth: gridOuterWidth,
         marginVertical: gridMargin,
+        maxHeight: '88%',
     },
     gridLineX: {
         position: 'absolute',

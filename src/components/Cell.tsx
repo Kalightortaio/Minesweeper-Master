@@ -7,9 +7,10 @@ import SVGLoader from "./SVGLoader";
 interface CellComponentProps extends CellStateProps {
     onCellPress: (isLongPress: boolean) => void,
     lostGame: boolean,
+    wonGame: boolean,
 }
 
-function Cell({ onCellPress, lostGame, ...cellStateProps }: CellComponentProps) {
+function Cell({ onCellPress, lostGame, wonGame, ...cellStateProps }: CellComponentProps) {
 
     let showCell = !cellStateProps.isMine && cellStateProps.isRevealed;
     let showMine = cellStateProps.isMine && cellStateProps.isRevealed;
@@ -18,8 +19,8 @@ function Cell({ onCellPress, lostGame, ...cellStateProps }: CellComponentProps) 
 
     return (
         <TouchableWithoutFeedback 
-            onPress={!lostGame ? () => onCellPress(false) : undefined}
-            onLongPress={!lostGame ? () => onCellPress(true) : undefined} 
+            onPress={!(lostGame || wonGame) ? () => onCellPress(false) : undefined}
+            onLongPress={!(lostGame || wonGame) ? () => onCellPress(true) : undefined} 
             delayLongPress={200}>
             <View style={[styles.cell, cellStateProps.isRevealed ? styles.isRevealed : {}, (cellStateProps.isFlagged || cellStateProps.isMine) ? styles.isSymbol : {}, showTriggeredMine ? styles.isTriggeredMine : {}, showUntriggeredMine ? styles.isLostGame : {}]}>
                 {showCell && (cellStateProps.neighbors != 0) && (
@@ -77,13 +78,16 @@ const styles = StyleSheet.create({
     isTriggeredMine: {
         backgroundColor: 'red',
         zIndex: -1,
+        elevation: -1,
     },
     isRevealedMine: {
         backgroundColor: 'red',
         zIndex: -1,
+        elevation: -1,
     },
     isLostGame: {
         backgroundColor: 'transparent',
         zIndex: -1,
+        elevation: -1,
     }
 })
