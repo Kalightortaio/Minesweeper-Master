@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
         maxWidth: gridOuterWidth,
         marginTop: gridMargin,
         height: interfaceOuterHeight,
-        maxHeight: interfaceOuterHeight,
+        maxHeight: '7%',
     },
     gridContainer: {
         justifyContent: 'center',
@@ -64,6 +64,8 @@ const styles = StyleSheet.create({
         width: '100%',
         maxWidth: gridOuterWidth,
         marginVertical: gridMargin,
+        maxHeight: '88%',
+        overflow: 'hidden',
     },
     titleText: {
         fontFamily: 'MINESWEEPER',

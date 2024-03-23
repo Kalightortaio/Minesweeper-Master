@@ -123,6 +123,7 @@ const styles = StyleSheet.create({
         maxWidth: gridOuterWidth,
         marginVertical: gridMargin,
         maxHeight: '88%',
+        overflow: 'hidden',
     },
     titleText: {
         fontFamily: 'MINESWEEPER',
