@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Vibration } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { NavigationProvider } from '../components/NavigationContext';
 import { useTimerControls } from '../components/TimerControlContext';
 import { TimerValueProvider } from '../components/TimerValueContext';
-import { RootStackParamList } from '../Types';
-import { CellStateProps } from '../Types';
+import { useSounds } from '../components/SoundContext';
+import { CellStateProps, RootStackParamList } from '../Types';
 import { borderWidth, cellSize, gridMargin, gridOuterWidth, interfaceOuterHeight, numColumns, numLives, numMines, numRows, practiceMode } from '../Constants';
 import Zoomable from '../components/Zoomable';
 import Interface from '../components/Interface';
@@ -27,6 +27,7 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
     const [livesLeft, setLivesLeft] = useState(initializeLives());
     const [faceState, setFaceState] = useState<"faceSmiling"|"faceChilling"|"faceFrowning">("faceSmiling");
     const { startTimer, pauseTimer, resetTimer, isTimerActive } = useTimerControls();
+    const { playSound } = useSounds();
 
     function initializeLives(): number {
         if (practiceMode) {
@@ -86,6 +87,7 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
 
     const onCellPress = throttle((row: number, col: number, long: boolean ) => {
         if (!isPanOrPinchActive) {
+            playSound('click');
             let localCells = [...cells];
             if (!long) {
                 if (isFlagMode) {
@@ -102,7 +104,7 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
                     if (!localCells[row][col].isRevealed && !localCells[row][col].isFlagged) {
                         Vibration.vibrate(30);
                         revealCell(row, col);
-                    } else if (localCells[row][col].isRevealed && !localCells[row][col].isFlagged) {
+                    } else if (localCells[row][col].isRevealed && localCells[row][col].neighbors !== 0 && !localCells[row][col].isFlagged) {
                         Vibration.vibrate(30);
                         revealAdjacentCells(row, col, localCells);
                     }
@@ -110,7 +112,7 @@ export default function ClassicMode({ navigation }:ClassicModeProps) {
                     if (!localCells[row][col].isRevealed && isTimerActive) {
                         Vibration.vibrate(30);
                         flagCell(row, col);
-                    } else if (localCells[row][col].isRevealed && isTimerActive) {
+                    } else if (localCells[row][col].isRevealed && localCells[row][col].neighbors !== 0 && isTimerActive) {
                         Vibration.vibrate(30);
                         revealAdjacentCells(row, col, localCells);
                     }
