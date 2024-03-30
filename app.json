@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Minesweeper",
-    "slug": "minesweeper",
-    "scheme": "com.ataraxiagames.minesweeper",
+    "name": "Minesweeper Master",
+    "slug": "minesweeper_master",
+    "scheme": "com.ataraxiagames.minesweeper_master",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -22,19 +22,20 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.kalightortaio.minesweeper_master"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "extra": {
-      "eas": {
-        "projectId": "060ec8ed-a4be-4f98-b395-23e7cb62abb9"
-      }
-    },
     "owner": "kalightortaio",
     "plugins": [
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "dbebe8cd-7ba4-4e27-8227-9bbd400786d6"
+      }
+    }
   }
 }
