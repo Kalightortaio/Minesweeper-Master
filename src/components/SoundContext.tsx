@@ -1,5 +1,5 @@
 import React, { ReactNode, createContext, useContext, useEffect, useRef, useState } from 'react';
-import { Audio } from 'expo-av';
+import { Audio, InterruptionModeAndroid, InterruptionModeIOS } from 'expo-av';
 
 interface SoundContextType {
     playSound: (arg0: string) => void;
@@ -14,7 +14,6 @@ interface SoundProviderProps {
 }
 
 export const SoundProvider: React.FC<SoundProviderProps> = ({ children }) => {
-    const [loading, setLoading] = useState(true);
     const [sounds, setSounds] = useState<{[key: string]: Audio.Sound}>({});
     const lastRollsRef = useRef<number[]>([1,2]);
     const numClickSounds = 4;
@@ -37,6 +36,15 @@ export const SoundProvider: React.FC<SoundProviderProps> = ({ children }) => {
             setSounds(Object.fromEntries(loadedSounds));
         };
 
+        Audio.setAudioModeAsync({
+            playsInSilentModeIOS: true,
+            allowsRecordingIOS: false,
+            interruptionModeIOS: InterruptionModeIOS.MixWithOthers,
+            interruptionModeAndroid: InterruptionModeAndroid.DuckOthers,
+            shouldDuckAndroid: true,
+            staysActiveInBackground: false,
+        });
+
         loadSounds();
 
         return () => {
@@ -56,6 +64,11 @@ export const SoundProvider: React.FC<SoundProviderProps> = ({ children }) => {
         }
         const sound = sounds[soundKey]
         if (sound) {
+            // Developer To-Do: Write Native Code for...
+            // 1. Prevent Android Ducking.
+            // 2. Adjust Sound Volume, dynamically based on system volume.
+            // 3. Add slider in Options for further control.
+            await sound.setVolumeAsync(0.5);
             await sound.replayAsync();
         }
     };
